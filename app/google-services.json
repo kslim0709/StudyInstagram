@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1045368975067",
+    "project_id": "studyinstagram-88f06",
+    "storage_bucket": "studyinstagram-88f06.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045368975067:android:abf4d06b13861aabc2a6fe",
+        "android_client_info": {
+          "package_name": "com.kslim.studyinstagram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1045368975067-pl4psfgp2ppdugug7q21e1gk7o0hp03j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBtXOBOIN7vN6pWzil7NIpdJdA9nDuGMo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1045368975067-pl4psfgp2ppdugug7q21e1gk7o0hp03j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
