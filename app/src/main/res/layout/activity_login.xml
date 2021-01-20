@@ -6,6 +6,10 @@
     <data>
 
         <variable
+            name="loginActivity"
+            type="com.kslim.studyinstagram.ui.login.LoginActivity" />
+
+        <variable
             name="loginViewModel"
             type="com.kslim.studyinstagram.ui.login.LoginViewModel" />
 
@@ -40,7 +44,8 @@
                     android:id="@+id/email_edittext"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/email" />
+                    android:hint="@string/email"
+                    android:text="@={loginViewModel.loginEmailText}" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -54,7 +59,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/password"
-                    android:inputType="textPassword" />
+                    android:inputType="textPassword"
+                    android:text="@={loginViewModel.loginPasswordText}" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -65,11 +71,12 @@
                 android:layout_marginTop="15dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="35dp"
-                android:onClick="@{(v)->activity.signinAndSignup()}"
+                android:onClick="@{(v)->loginViewModel.login()}"
                 android:text="@string/signin_email"
                 android:theme="@style/ButtonStyle" />
 
             <Button
+                android:id="@+id/facebook_login_button"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginLeft="20dp"
@@ -77,16 +84,19 @@
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/btn_signin_facebook"
                 android:text="@string/signin_facebook"
+                android:onClick="@{(v)->loginActivity.facebookLogin()}"
                 android:textColor="@color/colorWhite"
                 android:theme="@style/ButtonStyle" />
 
             <Button
+                android:id="@+id/google_sign_id_button"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="80dp"
                 android:background="@drawable/btn_signin_google"
+                android:onClick="@{(v)->loginActivity.googleLogin()}"
                 android:text="@string/signin_google"
                 android:textColor="@color/colorWhite"
                 android:theme="@style/ButtonStyle" />

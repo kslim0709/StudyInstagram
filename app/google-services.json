@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "1045368975067-jms79cjvtu7qpiquj2v3jlh9cb27og3v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kslim.studyinstagram",
+            "certificate_hash": "4cc18b01c63d03c2e7246076405c8b37a93b6816"
+          }
+        },
+        {
           "client_id": "1045368975067-pl4psfgp2ppdugug7q21e1gk7o0hp03j.apps.googleusercontent.com",
           "client_type": 3
         }

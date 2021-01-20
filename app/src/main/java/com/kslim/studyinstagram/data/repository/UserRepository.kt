@@ -1,14 +1,24 @@
 package com.kslim.studyinstagram.data.repository
 
+import com.google.firebase.auth.AuthCredential
 import com.kslim.studyinstagram.data.firebase.FirebaseApi
 
-class UserRepository(private val firebase: FirebaseApi) {
+class UserRepository {
 
-    fun login(email: String, password: String) = firebase.login(email, password)
+    private val firebaseApi:FirebaseApi by lazy {
+        FirebaseApi()
+    }
 
-    fun register(email: String, password: String) = firebase.register(email, password)
 
-    fun currentUser() = firebase.currentUser()
+    fun login(email: String, password: String) = firebaseApi.login(email, password)
 
-    fun logout() = firebase.logout()
+    fun googleLogin(credential: AuthCredential) = firebaseApi.googleLogin(credential)
+
+    fun facebookLogin(credential: AuthCredential) = firebaseApi.facebookLogin(credential)
+
+    fun register(email: String, password: String) = firebaseApi.register(email, password)
+
+    fun currentUser() = firebaseApi.currentUser()
+
+    fun logout() = firebaseApi.logout()
 }

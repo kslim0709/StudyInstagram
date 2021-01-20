@@ -2,6 +2,7 @@ package com.kslim.studyinstagram.ui.login
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.AuthCredential
 import com.kslim.studyinstagram.data.repository.UserRepository
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -38,6 +39,34 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
                 loginListener?.onFailure(it.message!!)
             })
         disposables.add(disposable)
+    }
+
+    fun googleLogin(credential: AuthCredential?) {
+        if (credential != null) {
+            val disposable = repository.googleLogin(credential)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    loginListener?.onSuccess()
+                }, {
+                    loginListener?.onFailure(it.message!!)
+                })
+            disposables.add(disposable)
+        }
+    }
+
+    fun facebookLogin(credential: AuthCredential?) {
+        if (credential != null) {
+            val disposable = repository.facebookLogin(credential)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    loginListener?.onSuccess()
+                }, {
+                    loginListener?.onFailure(it.message!!)
+                })
+            disposables.add(disposable)
+        }
     }
 
     override fun onCleared() {

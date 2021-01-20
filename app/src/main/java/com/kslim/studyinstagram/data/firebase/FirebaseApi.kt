@@ -1,5 +1,6 @@
 package com.kslim.studyinstagram.data.firebase
 
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import io.reactivex.Completable
 
@@ -10,6 +11,26 @@ class FirebaseApi {
 
     fun login(email: String, password: String) = Completable.create { emitter ->
         firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+            if (!emitter.isDisposed) {
+                emitter.onComplete()
+            } else {
+                emitter.onError(it.exception!!)
+            }
+        }
+    }
+
+    fun googleLogin(credential: AuthCredential) = Completable.create { emitter ->
+        firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
+            if (!emitter.isDisposed) {
+                emitter.onComplete()
+            } else {
+                emitter.onError(it.exception!!)
+            }
+        }
+    }
+
+    fun facebookLogin(credential: AuthCredential) = Completable.create { emitter ->
+        firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
             if (!emitter.isDisposed) {
                 emitter.onComplete()
             } else {
