@@ -6,15 +6,15 @@
     <data>
 
         <variable
-            name="activity"
-            type="com.kslim.studyinstagram.LoginActivity" />
+            name="loginViewModel"
+            type="com.kslim.studyinstagram.ui.login.LoginViewModel" />
 
     </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".LoginActivity">
+        tools:context=".ui.login.LoginActivity">
 
         <ImageView
             android:layout_width="match_parent"

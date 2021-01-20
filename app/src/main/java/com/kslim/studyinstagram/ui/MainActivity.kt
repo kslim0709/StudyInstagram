@@ -1,7 +1,8 @@
-package com.kslim.studyinstagram
+package com.kslim.studyinstagram.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.kslim.studyinstagram.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
