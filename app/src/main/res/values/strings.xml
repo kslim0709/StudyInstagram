@@ -4,6 +4,7 @@
     <string name="facebook_app_id">206459601130965</string>
     <string name="fb_login_protocol_scheme">fb206459601130965</string>
 
+    <string name="date_format_pattern">yyyyMMdd_HHmmss</string>
 
     <!-- Sign In -->
     <string name="email">Email</string>
