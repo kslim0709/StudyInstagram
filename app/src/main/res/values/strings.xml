@@ -55,4 +55,9 @@
     <!-- etc -->
     <item name="visible" type="id" />
     <item name="masked" type="id" />
+
+    <!-- Item Detail -->
+    <string name="ex_explain_content">Explain_content</string>
+    <string name="ex_like_count">Like 0</string>
+    <string name="ex_user_name">user name</string>
 </resources>
