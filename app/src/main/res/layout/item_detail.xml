@@ -1,69 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+            name="itemDetail"
+            type="com.kslim.studyinstagram.ui.navigation.model.ContentDTO" />
+    </data>
+
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:gravity="center_vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/iv_detail_profile"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="7.5dp"
+                android:contentDescription="@string/upload_image"
+                android:src="@drawable/ic_launcher_background" />
+
+            <TextView
+                android:id="@+id/tv_detail_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ex_user_name" />
+
+        </LinearLayout>
 
         <ImageView
-            android:id="@+id/iv_detail_profile"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_margin="7.5dp"
+            android:id="@+id/iv_detail_content"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
             android:contentDescription="@string/upload_image"
-            android:src="@drawable/ic_launcher_background" />
+            android:scaleType="fitXY" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/iv_detail_favorite"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:contentDescription="@string/upload_image"
+                android:src="@drawable/ic_favorite_border" />
+
+            <ImageView
+                android:id="@+id/iv_detail_comment"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:contentDescription="@string/upload_image"
+                android:src="@drawable/ic_chat_black" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/tv_detail_profile"
+            android:id="@+id/tv_detail_favorite_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/ex_user_name" />
+            android:text="@string/ex_like_count" />
 
+        <TextView
+            android:id="@+id/tv_detail_explain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/ex_explain_content" />
     </LinearLayout>
-
-    <ImageView
-        android:id="@+id/iv_detail_content"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:contentDescription="@string/upload_image"
-        android:scaleType="fitXY" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginStart="8dp"
-        android:gravity="center_vertical">
-
-        <ImageView
-            android:id="@+id/iv_detail_favorite"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:contentDescription="@string/upload_image"
-            android:src="@drawable/ic_favorite_border" />
-
-        <ImageView
-            android:id="@+id/iv_detail_comment"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:contentDescription="@string/upload_image"
-            android:src="@drawable/ic_chat_black" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_detail_favorite_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/ex_like_count" />
-
-    <TextView
-        android:id="@+id/tv_detail_explain"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:text="@string/ex_explain_content" />
-</LinearLayout>
+</layout>

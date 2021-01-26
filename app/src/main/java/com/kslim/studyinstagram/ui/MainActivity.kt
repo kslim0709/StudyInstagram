@@ -2,10 +2,10 @@ package com.kslim.studyinstagram.ui
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -16,7 +16,7 @@ import com.kslim.studyinstagram.ui.navigation.AlarmFragment
 import com.kslim.studyinstagram.ui.navigation.DetailViewFragment
 import com.kslim.studyinstagram.ui.navigation.GridFragment
 import com.kslim.studyinstagram.ui.navigation.UserFragment
-import java.util.jar.Manifest
+import com.kslim.studyinstagram.ui.photo.AddPhotoActivity
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
     private lateinit var mainBinding: ActivityMainBinding

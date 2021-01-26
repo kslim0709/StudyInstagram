@@ -26,6 +26,8 @@ import java.util.*
 
 
 class LoginActivity : AppCompatActivity(), LoginListener {
+    private val TAG: String = "LoginActivity"
+
     private lateinit var loginBinding: ActivityLoginBinding
     private lateinit var loginViewModel: LoginViewModel
 
@@ -41,7 +43,7 @@ class LoginActivity : AppCompatActivity(), LoginListener {
         loginBinding = DataBindingUtil.setContentView(this, R.layout.activity_login)
 
         val provider =
-            ViewModelProviderFactory(UserRepository())
+            ViewModelProviderFactory(UserRepository.getInstance())
         loginViewModel = ViewModelProvider(this, provider).get(LoginViewModel::class.java)
 
         loginBinding.loginActivity = this@LoginActivity
@@ -63,10 +65,10 @@ class LoginActivity : AppCompatActivity(), LoginListener {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)!!
-                Log.d("LoginActivity", "firebaseAuthWithGoogle: ${account.id}")
+                Log.d(TAG, "firebaseAuthWithGoogle: ${account.id}")
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                Log.w("LoginActivity", "Google sign in failed, ${e.message}")
+                Log.w(TAG, "Google sign in failed, ${e.message}")
             }
         }
 

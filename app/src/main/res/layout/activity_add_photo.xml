@@ -7,13 +7,13 @@
 
         <variable
             name="addPhotoActivity"
-            type="com.kslim.studyinstagram.ui.AddPhotoActivity" />
+            type="com.kslim.studyinstagram.ui.photo.AddPhotoActivity" />
     </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.AddPhotoActivity">
+        tools:context=".ui.photo.AddPhotoActivity">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/add_photo_toolbar"

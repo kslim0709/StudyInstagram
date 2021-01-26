@@ -3,12 +3,17 @@ package com.kslim.studyinstagram.data.repository
 import com.google.firebase.auth.AuthCredential
 import com.kslim.studyinstagram.data.firebase.FirebaseApi
 
-class UserRepository {
+class UserRepository private constructor() {
+    private var firebaseApi: FirebaseApi = FirebaseApi()
 
-    private val firebaseApi:FirebaseApi by lazy {
-        FirebaseApi()
+    companion object {
+        @Volatile
+        private var userRepository: UserRepository? = null
+
+        fun getInstance(): UserRepository = userRepository ?: synchronized(this) {
+            userRepository ?: UserRepository().also { userRepository = it }
+        }
     }
-
 
     fun login(email: String, password: String) = firebaseApi.login(email, password)
 
@@ -21,4 +26,9 @@ class UserRepository {
     fun currentUser() = firebaseApi.currentUser()
 
     fun logout() = firebaseApi.logout()
+
+
+    // Firebase Cloud data base
+    fun requestFirebaseStoreItemList() = firebaseApi.requestFirebaseStoreItemList()
+    fun updateFavoriteEvent(uId: String) = firebaseApi.updateFavoriteEvent(uId)
 }
