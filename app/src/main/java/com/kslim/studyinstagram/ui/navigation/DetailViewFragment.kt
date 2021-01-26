@@ -109,6 +109,17 @@ class DetailViewFragment : Fragment() {
                     .setImageResource(R.drawable.ic_favorite_border)
             }
 
+            //This code is when the profie image
+            viewHolder.findViewById<ImageView>(R.id.iv_detail_profile).setOnClickListener {
+                var fragment = UserFragment()
+                var bundle = Bundle()
+                bundle.putString("destinationUid", contentDTO.uId)
+                bundle.putString("userId", contentDTO.userId)
+                fragment.arguments = bundle
+                activity?.supportFragmentManager?.beginTransaction()
+                    ?.replace(R.id.main_content, fragment)?.commit()
+            }
+
         }
 
         override fun getItemCount(): Int {

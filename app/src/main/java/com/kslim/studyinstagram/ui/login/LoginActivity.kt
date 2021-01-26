@@ -16,6 +16,7 @@ import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.ViewModelProviderFactory
@@ -53,6 +54,18 @@ class LoginActivity : AppCompatActivity(), LoginListener {
 
         callbackManager = CallbackManager.Factory.create()
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+        moveMainPage(UserRepository().currentUser())
+    }
+
+    fun moveMainPage(user: FirebaseUser?) {
+//        if (user != null) {
+//            startMainActivity()
+//            finish()
+//        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
