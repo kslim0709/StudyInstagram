@@ -1,17 +1,21 @@
 package com.kslim.studyinstagram.ui
 
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.UploadTask
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.databinding.ActivityMainBinding
 import com.kslim.studyinstagram.ui.navigation.AlarmFragment
@@ -93,5 +97,38 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         mainBinding.toolbarUserName.visibility = View.GONE
         mainBinding.toolbarBtnBack.visibility = View.GONE
         mainBinding.toolbarTitleImage.visibility = View.VISIBLE
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == UserFragment.PICK_PROFILE_FROM_ALBUM && resultCode == Activity.RESULT_OK) {
+            val imageUrl = data?.data
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+//            val storeageRef =
+//                FirebaseStorage.getInstance().reference.child("userProfileImages").child(uid!!)
+//            storeageRef.putFile(imageUrl!!)
+//                .continueWithTask { task: com.google.android.gms.tasks.Task<UploadTask.TaskSnapshot> ->
+//                    return@continueWithTask storeageRef.downloadUrl
+//                }.addOnSuccessListener { uri ->
+//                var map = HashMap<String, Any>()
+//                map["image"] = uri.toString()
+//                FirebaseStorage.getInstance().collection("profileImages").document(uid).set(map)
+
+            val storeageRef =
+                FirebaseStorage.getInstance().reference.child("userProfileImages").child(uid!!)
+
+            storeageRef.putFile(imageUrl!!)
+                .continueWithTask { task: com.google.android.gms.tasks.Task<UploadTask.TaskSnapshot> ->
+                    return@continueWithTask storeageRef.downloadUrl
+                }.addOnSuccessListener { uri ->
+                    val map = HashMap<String, Any>()
+                    map["image"] = uri.toString()
+                    FirebaseFirestore.getInstance().collection("profileImages").document(uid)
+                        .set(map)
+
+                }
+        }
     }
 }

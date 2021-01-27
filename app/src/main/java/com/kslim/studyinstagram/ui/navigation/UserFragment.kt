@@ -1,15 +1,20 @@
 package com.kslim.studyinstagram.ui.navigation
 
 import android.content.Intent
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.ViewModelProviderFactory
 import com.kslim.studyinstagram.data.repository.UserRepository
@@ -21,8 +26,8 @@ import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import com.kslim.studyinstagram.ui.navigation.viewmodel.UserViewModel
 
 class UserFragment : Fragment() {
-    var uid: String? = null
-    var currentUserId: String? = null
+    private var uid: String? = null
+    private var currentUserId: String? = null
 
     private lateinit var userDataBinding: FragmentUserBinding
     private lateinit var userViewModel: UserViewModel
@@ -31,6 +36,11 @@ class UserFragment : Fragment() {
     private lateinit var userRecyclerView: RecyclerView
 
     private val userRepository: UserRepository = UserRepository.getInstance()
+
+    companion object {
+        var PICK_PROFILE_FROM_ALBUM = 10
+
+    }
 
 
     override fun onCreateView(
@@ -59,7 +69,6 @@ class UserFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         uid = arguments?.getString("destinationUid")
-
         currentUserId = userRepository.currentUser()?.uid
 
         if (uid == currentUserId) {
@@ -91,12 +100,58 @@ class UserFragment : Fragment() {
         userRecyclerView.layoutManager = GridLayoutManager(activity, 3)
 
 
-        userRepository.currentUser()?.let { userViewModel.requestFirebaseStoreItemList(it.uid) }
+        currentUserId?.let { userViewModel.requestFirebaseStoreItemList(it) }
+
+        currentUserId?.let { userViewModel.getFirebaseStoreProfileImage(it) }
+
+        uid?.let { userViewModel.getFollowerAndroidFollowing(it) }
 
         userViewModel.getContentDTOList().observe(this, {
             userAdapter.contentDTOs = it as ArrayList<ContentDTO>
             userAdapter.notifyDataSetChanged()
         })
+
+        userViewModel.getFirebaseStoreProfileImageURL().observe(this, {
+            if (it != null) {
+                Glide.with(view.context).load(it).apply(RequestOptions().circleCrop())
+                    .into(userDataBinding.ivAccountProfile)
+            }
+        })
+
+        userViewModel.getFollowerAndroidFollowingData().observe(this, {
+
+            userDataBinding.tvAccountFollowingCount.text = it.followingCount.toString()
+            userDataBinding.tvAccountFollowerCount.text = it.followerCount.toString()
+
+            if (it.followers.containsKey(currentUserId)) {
+                userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow_cancel)
+                userDataBinding.btnAccountFollowSignout.background.colorFilter = PorterDuffColorFilter(ContextCompat.getColor(view.context,R.color.colorLightGray), PorterDuff.Mode.MULTIPLY)
+            } else {
+                if (uid != currentUserId) {
+                    userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow)
+                    userDataBinding.btnAccountFollowSignout.background.colorFilter = null
+                }
+            }
+
+        })
+
+    }
+
+    fun setUserProfile() {
+        val photoPickerIntent = Intent(Intent.ACTION_PICK)
+        photoPickerIntent.type = "image/*"
+        activity?.startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM)
+    }
+
+    fun requestFollow() {
+        uid?.let { uId ->
+            currentUserId?.let { currentUserId ->
+                userViewModel.requestFollow(
+                    uId,
+                    currentUserId
+                )
+            }
+        }
     }
 
 }

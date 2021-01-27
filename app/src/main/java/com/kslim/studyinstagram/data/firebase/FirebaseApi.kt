@@ -2,8 +2,10 @@ package com.kslim.studyinstagram.data.firebase
 
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
+import com.kslim.studyinstagram.ui.navigation.model.FollowDTO
 import io.reactivex.*
 
 
@@ -100,6 +102,7 @@ class FirebaseApi {
             }
 
             transition.set(tsDoc, contentDTO)
+            return@runTransaction
         }.addOnCompleteListener {
             if (!emitter.isDisposed) {
                 if (it.isSuccessful) {
@@ -130,5 +133,92 @@ class FirebaseApi {
 
             }
     }
+
+    fun getFirebaseStoreProfileImage(uId: String) = Single.create<DocumentSnapshot> { emitter ->
+        firebaseStore.collection("profileImages").document(uId)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    emitter.onError(error)
+                    return@addSnapshotListener
+                }
+
+                if (value != null) {
+                    emitter.onSuccess(value)
+                } else {
+                    emitter.onError(Throwable("Data is null"))
+                }
+            }
+    }
+
+    fun requestFollow(uId: String, currentUserUid: String) = Completable.create { emitter ->
+
+        // Save data to my account
+        val tsDocFollowing = firebaseStore.collection("users").document(currentUserUid)
+        firebaseStore.runTransaction { transition ->
+            var followDTO = transition.get(tsDocFollowing).toObject(FollowDTO::class.java)
+            if (followDTO == null) {
+                followDTO = FollowDTO()
+                followDTO.followingCount = 1
+                followDTO.followers[uId] = true
+
+                transition.set(tsDocFollowing, followDTO)
+                return@runTransaction
+            }
+
+            if (followDTO.followers.containsKey(uId)) {
+                // It remove following third person when a third person follow me
+                followDTO.followingCount = followDTO.followingCount - 1
+                followDTO.followers.remove(uId)
+            } else {
+                //It add following third person when a third person do not follow me
+                followDTO.followingCount = followDTO.followingCount + 1
+                followDTO.followers[uId] = true
+            }
+            transition.set(tsDocFollowing, followDTO)
+            return@runTransaction
+        }
+        // Save Data to third person
+        val tsDocFollower = firebaseStore.collection("users").document(uId)
+        firebaseStore.runTransaction { transition ->
+            var followerDTO = transition.get(tsDocFollower).toObject(FollowDTO::class.java)
+            if (followerDTO == null) {
+                followerDTO = FollowDTO()
+                followerDTO.followerCount = 1
+                followerDTO.followers[currentUserUid] = true
+
+                transition.set(tsDocFollower, followerDTO)
+                return@runTransaction
+            }
+
+            if (followerDTO.followers.containsKey(currentUserUid)) {
+                // It cancel my follower when I follow a third person
+                followerDTO.followerCount = followerDTO.followerCount - 1
+                followerDTO.followers.remove(currentUserUid)
+            } else {
+                // It add my follower when I don't follow a third person
+                followerDTO.followerCount = followerDTO.followerCount + 1
+                followerDTO.followers[currentUserUid]
+            }
+            transition.set(tsDocFollower, followerDTO)
+            return@runTransaction
+        }
+    }
+
+    fun getFollowerAndroidFollowing(uId: String) =
+        Single.create<DocumentSnapshot> { emitter ->
+            firebaseStore.collection("users").document(uId)
+                .addSnapshotListener { documentSnapshot, exception ->
+                    if (exception != null) {
+                        emitter.onError(exception)
+                        return@addSnapshotListener
+                    }
+                    if (documentSnapshot == null) {
+                        emitter.onError(Throwable("Data is null"))
+                        return@addSnapshotListener
+                    }
+
+                    emitter.onSuccess(documentSnapshot)
+                }
+        }
 
 }

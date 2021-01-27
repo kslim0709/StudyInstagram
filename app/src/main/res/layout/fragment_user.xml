@@ -3,6 +3,7 @@
 <layout>
 
     <data>
+
         <variable
             name="userFragment"
             type="com.kslim.studyinstagram.ui.navigation.UserFragment" />
@@ -21,6 +22,7 @@
                 android:id="@+id/iv_account_profile"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
+                android:onClick="@{(v) -> userFragment.setUserProfile()}"
                 android:src="@drawable/ic_account" />
 
             <Button
@@ -29,6 +31,7 @@
                 android:layout_height="40dp"
                 android:layout_alignParentBottom="true"
                 android:layout_toEndOf="@+id/iv_account_profile"
+                android:onClick="@{(v) ->userFragment.requestFollow()}"
                 android:text="@string/follow" />
 
             <LinearLayout
