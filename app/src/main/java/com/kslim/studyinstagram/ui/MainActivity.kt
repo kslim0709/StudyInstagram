@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -22,7 +21,7 @@ import com.kslim.studyinstagram.ui.navigation.UserFragment
 import com.kslim.studyinstagram.ui.photo.AddPhotoActivity
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
-    private lateinit var mainBinding: ActivityMainBinding
+    lateinit var mainBinding: ActivityMainBinding
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,8 +77,8 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             }
             R.id.action_account -> {
                 val userFragment = UserFragment()
-                var bundle = Bundle()
-                var uid = FirebaseAuth.getInstance().currentUser?.uid
+                val bundle = Bundle()
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
                 bundle.putString("destinationUid", uid)
                 userFragment.arguments = bundle
                 supportFragmentManager.beginTransaction()
@@ -90,7 +89,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         return false
     }
 
-    fun setToolbarDefault() {
+    private fun setToolbarDefault() {
         mainBinding.toolbarUserName.visibility = View.GONE
         mainBinding.toolbarBtnBack.visibility = View.GONE
         mainBinding.toolbarTitleImage.visibility = View.VISIBLE

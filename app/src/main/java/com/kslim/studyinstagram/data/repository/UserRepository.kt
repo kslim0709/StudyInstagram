@@ -30,5 +30,6 @@ class UserRepository private constructor() {
 
     // Firebase Cloud data base
     fun requestFirebaseStoreItemList() = firebaseApi.requestFirebaseStoreItemList()
-    fun updateFavoriteEvent(uId: String) = firebaseApi.updateFavoriteEvent(uId)
+    fun updateFavoriteEvent(uId: String, imageUid: String) = firebaseApi.updateFavoriteEvent(uId, imageUid)
+    fun requestFirebaseStoreUserItemList(uId: String) = firebaseApi.requestFirebaseStoreUserItemList(uId)
 }

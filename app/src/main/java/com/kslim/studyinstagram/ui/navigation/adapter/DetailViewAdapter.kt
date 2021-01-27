@@ -1,6 +1,5 @@
 package com.kslim.studyinstagram.ui.navigation.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
@@ -14,13 +13,13 @@ class DetailViewAdapter(private val uId: String?) :
     RecyclerView.Adapter<DetailViewAdapter.DetailViewHolder>() {
 
     interface DetailViewItemClickListener {
-        fun onItemClick(uID: String)
+        fun onItemClick(uID: String, imageUid: String)
+        fun onProfileClick(uID: String, userID: String)
     }
 
     var detailViewItemClickListener: DetailViewItemClickListener? = null
 
     var contentDTOs: ArrayList<ContentDTO> = arrayListOf()
-    private var contentUidList: ArrayList<String> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailViewHolder {
         val binding = DataBindingUtil.inflate(
@@ -33,7 +32,7 @@ class DetailViewAdapter(private val uId: String?) :
     }
 
     override fun onBindViewHolder(holder: DetailViewHolder, position: Int) {
-        holder.onBind(contentDTOs[position], position)
+        holder.onBind(contentDTOs[position])
     }
 
     override fun getItemCount(): Int {
@@ -43,7 +42,7 @@ class DetailViewAdapter(private val uId: String?) :
     inner class DetailViewHolder(private val detailViewBinding: ItemDetailBinding) :
         RecyclerView.ViewHolder(detailViewBinding.root) {
 
-        fun onBind(data: ContentDTO, position: Int) {
+        fun onBind(data: ContentDTO) {
             // UserID
             detailViewBinding.tvDetailProfile.text = data.userId
 
@@ -63,10 +62,8 @@ class DetailViewAdapter(private val uId: String?) :
 
             // This code is when the button is clicked
             detailViewBinding.ivDetailFavorite.setOnClickListener {
-                Log.v("DetailFragment", "Adapter Onclick")
                 if (detailViewItemClickListener != null) {
-                    val uId = contentDTOs[position].uId
-                    detailViewItemClickListener?.onItemClick(uId!!)
+                    detailViewItemClickListener?.onItemClick(uId!!, data.imageUid!!)
                 }
             }
 
@@ -77,6 +74,13 @@ class DetailViewAdapter(private val uId: String?) :
             } else {
                 // This is unlike status
                 detailViewBinding.ivDetailFavorite.setImageResource(R.drawable.ic_favorite_border)
+            }
+
+            //This code is when the profie image
+            detailViewBinding.ivDetailProfile.setOnClickListener {
+                if (detailViewItemClickListener != null) {
+                    detailViewItemClickListener?.onProfileClick(data.uId!!, data.userId!!)
+                }
             }
         }
 

@@ -9,13 +9,13 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('C:\\Users\\kyoungso\\AndroidStudioProjects\\studyInstagram.jks')
+            storeFile file('D:\\Study\\key\\studyInstagram.jks')
             storePassword 'instagram'
             keyAlias 'StudyInstagram'
             keyPassword 'instagram'
         }
         release {
-            storeFile file('C:\\Users\\kyoungso\\AndroidStudioProjects\\studyInstagram.jks')
+            storeFile file('D:\\Study\\key\\studyInstagram.jks')
             storePassword 'instagram'
             keyAlias 'StudyInstagram'
             keyPassword 'instagram'

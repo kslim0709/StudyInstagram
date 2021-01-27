@@ -74,6 +74,7 @@ class FirebaseApi {
                 val itemList: ArrayList<ContentDTO> = arrayListOf()
                 for (value in values!!.documents) {
                     val item = value.toObject(ContentDTO::class.java)
+                    item?.imageUid = value.id
                     itemList.add(item!!)
 
                 }
@@ -82,8 +83,8 @@ class FirebaseApi {
             }
     }
 
-    fun updateFavoriteEvent(uId: String) = Completable.create { emitter ->
-        val tsDoc = firebaseStore.collection("images").document(uId)
+    fun updateFavoriteEvent(uId: String, imageUid: String) = Completable.create { emitter ->
+        val tsDoc = firebaseStore.collection("images").document(imageUid)
         firebaseStore.runTransaction { transition ->
             val contentDTO = transition.get(tsDoc).toObject(ContentDTO::class.java)
 
@@ -95,7 +96,7 @@ class FirebaseApi {
             } else {
                 // when the button is not clicked
                 contentDTO.favoriteCount = contentDTO.favoriteCount + 1
-                contentDTO.favorites[uId!!] = true
+                contentDTO.favorites[uId] = true
             }
 
             transition.set(tsDoc, contentDTO)
@@ -109,4 +110,25 @@ class FirebaseApi {
             }
         }
     }
+
+    fun requestFirebaseStoreUserItemList(uId: String) = Single.create<List<ContentDTO>> { emitter ->
+        firebaseStore.collection("images").whereEqualTo("uid", uId)
+            .addSnapshotListener { values, error ->
+                // Sometimes, This code return null of querySnapshot when it sign out
+                if (error != null) {
+                    emitter.onError(error)
+                    return@addSnapshotListener
+                }
+
+                //Get Data
+                val itemList: ArrayList<ContentDTO> = arrayListOf()
+                for (value in values!!.documents) {
+                    val item = value.toObject(ContentDTO::class.java)
+                    itemList.add(item!!)
+                }
+                emitter.onSuccess(itemList)
+
+            }
+    }
+
 }

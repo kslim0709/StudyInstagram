@@ -60,14 +60,15 @@ class LoginActivity : AppCompatActivity(), LoginListener {
 
     override fun onStart() {
         super.onStart()
-        moveMainPage(UserRepository().currentUser())
+        moveMainPage(UserRepository.getInstance().currentUser())
     }
 
     fun moveMainPage(user: FirebaseUser?) {
-//        if (user != null) {
-//            startMainActivity()
-//            finish()
-//        }
+        if (user != null) {
+            Log.v(TAG, "moveMainPage")
+            startMainActivity()
+            finish()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
