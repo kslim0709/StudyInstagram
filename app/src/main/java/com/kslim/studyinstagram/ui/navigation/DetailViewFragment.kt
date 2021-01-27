@@ -80,4 +80,43 @@ class DetailViewFragment : Fragment(), DetailViewAdapter.DetailViewItemClickList
         detailViewModel.updateFavoriteEvent(uID)
     }
 
+            //This code is when the profie image
+            viewHolder.findViewById<ImageView>(R.id.iv_detail_profile).setOnClickListener {
+                var fragment = UserFragment()
+                var bundle = Bundle()
+                bundle.putString("destinationUid", contentDTO.uId)
+                bundle.putString("userId", contentDTO.userId)
+                fragment.arguments = bundle
+                activity?.supportFragmentManager?.beginTransaction()
+                    ?.replace(R.id.main_content, fragment)?.commit()
+            }
+
+        }
+
+        override fun getItemCount(): Int {
+            return contentDTOs.size
+        }
+
+        fun favoriteEvent(position: Int) {
+            var tsDoc = fireStore?.collection("images")?.document(contentUidList[position])
+
+            fireStore?.runTransaction { transition ->
+                val contentDTO = transition.get(tsDoc!!).toObject(ContentDTO::class.java)
+
+                if (contentDTO!!.favorites.containsKey(uid)) {
+                    // When the button is clicked
+                    contentDTO.favoriteCount = contentDTO.favoriteCount - 1
+                    contentDTO.favorites.remove(uid)
+
+                } else {
+                    // when the button is not clicked
+                    contentDTO.favoriteCount = contentDTO.favoriteCount + 1
+                    contentDTO.favorites[uid!!] = true
+                }
+
+                transition.set(tsDoc, contentDTO)
+            }
+        }
+
+    }
 }

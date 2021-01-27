@@ -6,10 +6,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.databinding.ActivityMainBinding
 import com.kslim.studyinstagram.ui.navigation.AlarmFragment
@@ -42,6 +45,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        setToolbarDefault()
         Log.v("main", "onNaviGation: " + item.itemId)
         when (item.itemId) {
             R.id.action_home -> {
@@ -74,11 +78,21 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             }
             R.id.action_account -> {
                 val userFragment = UserFragment()
+                var bundle = Bundle()
+                var uid = FirebaseAuth.getInstance().currentUser?.uid
+                bundle.putString("destinationUid", uid)
+                userFragment.arguments = bundle
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.main_content, userFragment).commit()
                 return true
             }
         }
         return false
+    }
+
+    fun setToolbarDefault() {
+        mainBinding.toolbarUserName.visibility = View.GONE
+        mainBinding.toolbarBtnBack.visibility = View.GONE
+        mainBinding.toolbarTitleImage.visibility = View.VISIBLE
     }
 }
