@@ -1,10 +1,12 @@
 package com.kslim.studyinstagram.data.repository
 
 import com.google.firebase.auth.AuthCredential
-import com.kslim.studyinstagram.data.firebase.FirebaseApi
+import com.kslim.studyinstagram.data.firebase.FirebaseAuthApi
+import com.kslim.studyinstagram.data.firebase.FirebaseFireStoreApi
 
 class UserRepository private constructor() {
-    private var firebaseApi: FirebaseApi = FirebaseApi()
+    private var firebaseApi: FirebaseAuthApi = FirebaseAuthApi()
+    private var firebaseFireStoreApi: FirebaseFireStoreApi = FirebaseFireStoreApi()
 
     companion object {
         @Volatile
@@ -29,14 +31,14 @@ class UserRepository private constructor() {
 
 
     // Firebase Cloud data base
-    fun requestFirebaseStoreItemList() = firebaseApi.requestFirebaseStoreItemList()
+    fun requestFirebaseStoreItemList() = firebaseFireStoreApi.requestFirebaseStoreItemList()
     fun updateFavoriteEvent(uId: String, imageUid: String) =
-        firebaseApi.updateFavoriteEvent(uId, imageUid)
+        firebaseFireStoreApi.updateFavoriteEvent(uId, imageUid)
 
     fun requestFirebaseStoreUserItemList(uId: String) =
-        firebaseApi.requestFirebaseStoreUserItemList(uId)
+        firebaseFireStoreApi.requestFirebaseStoreUserItemList(uId)
 
-    fun getFirebaseStoreProfileImage(uId: String) = firebaseApi.getFirebaseStoreProfileImage(uId)
-    fun requestFollow(uId: String, currentUid: String) = firebaseApi.requestFollow(uId, currentUid)
-    fun getFollowerAndroidFollowing(uId: String) = firebaseApi.getFollowerAndroidFollowing(uId)
+    fun getFirebaseStoreProfileImage(uId: String) = firebaseFireStoreApi.getFirebaseStoreProfileImage(uId)
+    fun requestFollow(uId: String, currentUid: String) = firebaseFireStoreApi.requestFollow(uId, currentUid)
+    fun getFollowerAndroidFollowing(uId: String) = firebaseFireStoreApi.getFollowerAndroidFollowing(uId)
 }

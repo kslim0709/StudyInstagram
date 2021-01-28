@@ -1,67 +1,15 @@
 package com.kslim.studyinstagram.data.firebase
 
-import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
+import android.util.Log
+import com.google.firebase.firestore.*
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import com.kslim.studyinstagram.ui.navigation.model.FollowDTO
 import io.reactivex.*
 
-
-class FirebaseApi {
-    private val firebaseAuth: FirebaseAuth by lazy {
-        FirebaseAuth.getInstance()
-    }
-
+class FirebaseFireStoreApi {
     private val firebaseStore: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
     }
-
-    fun login(email: String, password: String) = Completable.create { emitter ->
-        firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-            if (!emitter.isDisposed) {
-                emitter.onComplete()
-            } else {
-                emitter.onError(it.exception!!)
-            }
-        }
-    }
-
-    fun googleLogin(credential: AuthCredential) = Completable.create { emitter ->
-        firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
-            if (!emitter.isDisposed) {
-                emitter.onComplete()
-            } else {
-                emitter.onError(it.exception!!)
-            }
-        }
-    }
-
-    fun facebookLogin(credential: AuthCredential) = Completable.create { emitter ->
-        firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
-            if (!emitter.isDisposed) {
-                emitter.onComplete()
-            } else {
-                emitter.onError(it.exception!!)
-            }
-        }
-    }
-
-    fun register(email: String, password: String) = Completable.create { emitter ->
-        firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
-            if (!emitter.isDisposed) {
-                if (it.isSuccessful)
-                    emitter.onComplete()
-                else
-                    emitter.onError(it.exception!!)
-            }
-        }
-    }
-
-    fun logout() = firebaseAuth.signOut()
-
-    fun currentUser() = firebaseAuth.currentUser
 
 
     // Firebase Storage
@@ -72,7 +20,7 @@ class FirebaseApi {
                     emitter.onError(error)
                     return@addSnapshotListener
                 }
-
+                Log.v("Firebase", "requestFirebaseStoreItemList ${values}")
                 val itemList: ArrayList<ContentDTO> = arrayListOf()
                 for (value in values!!.documents) {
                     val item = value.toObject(ContentDTO::class.java)
@@ -84,6 +32,11 @@ class FirebaseApi {
 
             }
     }
+
+//    fun requestFirebaseStoreItemList() : Task<QuerySnapshot> {
+//        return firebaseStore.collection("images").orderBy("timeStamp").get()
+//    }
+
 
     fun updateFavoriteEvent(uId: String, imageUid: String) = Completable.create { emitter ->
         val tsDoc = firebaseStore.collection("images").document(imageUid)
@@ -113,25 +66,49 @@ class FirebaseApi {
             }
         }
     }
+//
+//    fun requestFirebaseStoreUserItemList(uId: String) = Single.create<List<ContentDTO>> { emitter ->
+//        firebaseStore.collection("images").whereEqualTo("uid", uId)
+//            .addSnapshotListener { values, error ->
+//                // Sometimes, This code return null of querySnapshot when it sign out
+//                if (error != null) {
+//                    emitter.onError(error)
+//                    return@addSnapshotListener
+//                }
+//                //Get Data
+//                val itemList: ArrayList<ContentDTO> = arrayListOf()
+//                for (value in values!!.documents) {
+//                    val item = value.toObject(ContentDTO::class.java)
+//                    itemList.add(item!!)
+//                }
+//                emitter.onSuccess(itemList)
+//
+//            }
+//    }
 
-    fun requestFirebaseStoreUserItemList(uId: String) = Single.create<List<ContentDTO>> { emitter ->
+    private fun getUserItemQuery(uId: String): Query =
         firebaseStore.collection("images").whereEqualTo("uid", uId)
-            .addSnapshotListener { values, error ->
-                // Sometimes, This code return null of querySnapshot when it sign out
-                if (error != null) {
-                    emitter.onError(error)
-                    return@addSnapshotListener
-                }
 
-                //Get Data
-                val itemList: ArrayList<ContentDTO> = arrayListOf()
-                for (value in values!!.documents) {
-                    val item = value.toObject(ContentDTO::class.java)
-                    itemList.add(item!!)
-                }
-                emitter.onSuccess(itemList)
 
+    fun requestFirebaseStoreUserItemList(uId: String?): Flowable<List<ContentDTO>> {
+        return Flowable.create({ emitter ->
+            val reference: Query =
+                firebaseStore.collection("images").whereEqualTo("uid", uId)
+            val registration = reference.addSnapshotListener { documentSnapshot, e ->
+                if (e != null) {
+                    emitter.onError(e)
+                }
+                if (documentSnapshot != null) {
+                    val itemList: ArrayList<ContentDTO> = arrayListOf()
+                    for (value in documentSnapshot.documents) {
+                        val item = value.toObject(ContentDTO::class.java)
+                        itemList.add(item!!)
+                    }
+                    emitter.onNext(itemList)
+                }
             }
+            emitter.setCancellable { registration.remove() }
+        }, BackpressureStrategy.BUFFER)
     }
 
     fun getFirebaseStoreProfileImage(uId: String) = Single.create<DocumentSnapshot> { emitter ->
@@ -141,8 +118,9 @@ class FirebaseApi {
                     emitter.onError(error)
                     return@addSnapshotListener
                 }
-
+                Log.v("Firebase", "profileImage ${value}")
                 if (value != null) {
+                    Log.v("Firebase", "onSuccess profileImage ${value}")
                     emitter.onSuccess(value)
                 } else {
                     emitter.onError(Throwable("Data is null"))
@@ -204,21 +182,37 @@ class FirebaseApi {
         }
     }
 
-    fun getFollowerAndroidFollowing(uId: String) =
-        Single.create<DocumentSnapshot> { emitter ->
-            firebaseStore.collection("users").document(uId)
-                .addSnapshotListener { documentSnapshot, exception ->
-                    if (exception != null) {
-                        emitter.onError(exception)
-                        return@addSnapshotListener
-                    }
-                    if (documentSnapshot == null) {
-                        emitter.onError(Throwable("Data is null"))
-                        return@addSnapshotListener
-                    }
+//    fun getFollowerAndroidFollowing(uId: String) =
+//        Single.create<DocumentSnapshot> { emitter ->
+//            firebaseStore.collection("users").document(uId)
+//                .addSnapshotListener { documentSnapshot, exception ->
+//                    if (exception != null) {
+//                        emitter.onError(exception)
+//                        return@addSnapshotListener
+//                    }
+//                    if (documentSnapshot == null) {
+//                        emitter.onError(Throwable("Data is null"))
+//                        return@addSnapshotListener
+//                    }
+//
+//                    emitter.onSuccess(documentSnapshot)
+//                }
+//        }
 
-                    emitter.onSuccess(documentSnapshot)
+
+    fun getFollowerAndroidFollowing(uId: String): Flowable<DocumentSnapshot> {
+        return Flowable.create({ emitter ->
+            val reference: DocumentReference =
+                firebaseStore.collection("users").document(uId)
+            val registration = reference.addSnapshotListener { documentSnapshot, e ->
+                if (e != null) {
+                    emitter.onError(e)
                 }
-        }
-
+                if (documentSnapshot != null) {
+                    emitter.onNext(documentSnapshot)
+                }
+            }
+            emitter.setCancellable { registration.remove() }
+        }, BackpressureStrategy.BUFFER)
+    }
 }
