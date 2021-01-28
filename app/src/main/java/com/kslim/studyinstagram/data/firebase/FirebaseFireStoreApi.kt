@@ -1,7 +1,9 @@
 package com.kslim.studyinstagram.data.firebase
 
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
+import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import com.kslim.studyinstagram.ui.navigation.model.FollowDTO
 import io.reactivex.*
@@ -13,7 +15,7 @@ class FirebaseFireStoreApi {
 
 
     // Firebase Storage
-    fun requestFirebaseStoreItemList() = Single.create<List<ContentDTO>> { emitter ->
+    fun requestFirebaseStoreItemList() = Single.create<HashMap<String, List<Any>>> { emitter ->
         firebaseStore.collection("images").orderBy("timeStamp")
             .addSnapshotListener { values, error ->
                 if (error != null) {
@@ -22,13 +24,17 @@ class FirebaseFireStoreApi {
                 }
                 Log.v("Firebase", "requestFirebaseStoreItemList ${values}")
                 val itemList: ArrayList<ContentDTO> = arrayListOf()
+                val contentUidList: ArrayList<String> = arrayListOf()
+                val dataMap: HashMap<String, List<Any>> = HashMap()
                 for (value in values!!.documents) {
                     val item = value.toObject(ContentDTO::class.java)
-                    item?.imageUid = value.id
                     itemList.add(item!!)
+                    contentUidList.add(value.id)
 
                 }
-                emitter.onSuccess(itemList)
+                dataMap["item"] = itemList
+                dataMap["contentUid"] = contentUidList
+                emitter.onSuccess(dataMap)
 
             }
     }
@@ -52,6 +58,7 @@ class FirebaseFireStoreApi {
                 // when the button is not clicked
                 contentDTO.favoriteCount = contentDTO.favoriteCount + 1
                 contentDTO.favorites[uId] = true
+                favoriteAlarm(contentDTO.uId!!)
             }
 
             transition.set(tsDoc, contentDTO)
@@ -66,6 +73,18 @@ class FirebaseFireStoreApi {
             }
         }
     }
+
+
+    fun favoriteAlarm(destinationUid: String) {
+        var alarmDTO = AlarmDTO()
+        alarmDTO.destinationUid = destinationUid
+        alarmDTO.userId = FirebaseAuth.getInstance().currentUser?.email
+        alarmDTO.uId = FirebaseAuth.getInstance().currentUser?.uid
+        alarmDTO.kind = 0
+        alarmDTO.timeStamp = System.currentTimeMillis()
+        FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
+    }
+
 //
 //    fun requestFirebaseStoreUserItemList(uId: String) = Single.create<List<ContentDTO>> { emitter ->
 //        firebaseStore.collection("images").whereEqualTo("uid", uId)
@@ -86,9 +105,26 @@ class FirebaseFireStoreApi {
 //            }
 //    }
 
-    private fun getUserItemQuery(uId: String): Query =
-        firebaseStore.collection("images").whereEqualTo("uid", uId)
-
+    fun requestFirebaseStoreAllUserItemList(): Flowable<List<ContentDTO>> {
+        return Flowable.create({ emitter ->
+            val reference: Query =
+                firebaseStore.collection("images")
+            val registration = reference.addSnapshotListener { documentSnapshot, e ->
+                if (e != null) {
+                    emitter.onError(e)
+                }
+                if (documentSnapshot != null) {
+                    val itemList: ArrayList<ContentDTO> = arrayListOf()
+                    for (value in documentSnapshot.documents) {
+                        val item = value.toObject(ContentDTO::class.java)
+                        itemList.add(item!!)
+                    }
+                    emitter.onNext(itemList)
+                }
+            }
+            emitter.setCancellable { registration.remove() }
+        }, BackpressureStrategy.BUFFER)
+    }
 
     fun requestFirebaseStoreUserItemList(uId: String?): Flowable<List<ContentDTO>> {
         return Flowable.create({ emitter ->
@@ -143,7 +179,7 @@ class FirebaseFireStoreApi {
                 return@runTransaction
             }
 
-            if (followDTO.followers.containsKey(uId)) {
+            if (followDTO.followings.containsKey(uId)) {
                 // It remove following third person when a third person follow me
                 followDTO.followingCount = followDTO.followingCount - 1
                 followDTO.followers.remove(uId)
@@ -151,6 +187,7 @@ class FirebaseFireStoreApi {
                 //It add following third person when a third person do not follow me
                 followDTO.followingCount = followDTO.followingCount + 1
                 followDTO.followers[uId] = true
+
             }
             transition.set(tsDocFollowing, followDTO)
             return@runTransaction
@@ -163,7 +200,7 @@ class FirebaseFireStoreApi {
                 followerDTO = FollowDTO()
                 followerDTO.followerCount = 1
                 followerDTO.followers[currentUserUid] = true
-
+                followerAlarm(uId)
                 transition.set(tsDocFollower, followerDTO)
                 return@runTransaction
             }
@@ -176,10 +213,21 @@ class FirebaseFireStoreApi {
                 // It add my follower when I don't follow a third person
                 followerDTO.followerCount = followerDTO.followerCount + 1
                 followerDTO.followers[currentUserUid]
+                followerAlarm(uId)
             }
             transition.set(tsDocFollower, followerDTO)
             return@runTransaction
         }
+    }
+
+    fun followerAlarm(destinationUid: String) {
+        var alarmDTO = AlarmDTO()
+        alarmDTO.destinationUid = destinationUid
+        alarmDTO.userId = FirebaseAuth.getInstance().currentUser?.email
+        alarmDTO.uId = FirebaseAuth.getInstance().currentUser?.uid
+        alarmDTO.kind = 2
+        alarmDTO.timeStamp = System.currentTimeMillis()
+        FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
     }
 
 //    fun getFollowerAndroidFollowing(uId: String) =

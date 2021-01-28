@@ -87,6 +87,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 }
 
                 override fun onNext(t: DocumentSnapshot) {
+                    Log.v("UserFragment", "getFollowerAndroidFollowing exception: ${t.toObject(FollowDTO::class.java)}")
                     followDTO.value = t.toObject(FollowDTO::class.java)
                 }
 

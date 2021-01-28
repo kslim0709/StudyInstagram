@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,8 +36,6 @@ class UserFragment : Fragment() {
     private lateinit var userAdapter: UserAdapter
     private lateinit var userRecyclerView: RecyclerView
 
-    private val userRepository: UserRepository = UserRepository.getInstance()
-
     companion object {
         var PICK_PROFILE_FROM_ALBUM = 10
 
@@ -58,7 +57,7 @@ class UserFragment : Fragment() {
         userDataBinding.userFragment = this@UserFragment
 
 
-        val provider = ViewModelProviderFactory(userRepository)
+        val provider = ViewModelProviderFactory(UserRepository.getInstance())
         userViewModel = ViewModelProvider(this, provider).get(UserViewModel::class.java)
 
         return userDataBinding.root
@@ -69,16 +68,11 @@ class UserFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         uid = arguments?.getString("destinationUid")
-        currentUserId = userRepository.currentUser()?.uid
-
+        currentUserId = UserRepository.getInstance().currentUser()?.uid
+        Log.v("UserFragment", "viewCreate uid: ${uid},, currentUserId: ${currentUserId}")
         if (uid == currentUserId) {
             // MyPage
             userDataBinding.btnAccountFollowSignout.text = getString(R.string.signout)
-            userDataBinding.btnAccountFollowSignout.setOnClickListener {
-                activity?.finish()
-                startActivity(Intent(activity, LoginActivity::class.java))
-                userRepository.logout()
-            }
         } else {
             // Other User Page
             userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow)
@@ -92,6 +86,7 @@ class UserFragment : Fragment() {
             mainActivity.mainBinding.toolbarTitleImage.visibility = View.GONE
             mainActivity.mainBinding.toolbarUserName.visibility = View.VISIBLE
             mainActivity.mainBinding.toolbarBtnBack.visibility = View.VISIBLE
+
         }
 
         userAdapter = UserAdapter()
@@ -100,9 +95,9 @@ class UserFragment : Fragment() {
         userRecyclerView.layoutManager = GridLayoutManager(activity, 3)
 
 
-        currentUserId?.let { userViewModel.requestFirebaseStoreItemList(it) }
+        uid?.let { userViewModel.requestFirebaseStoreItemList(it) }
 
-        currentUserId?.let { userViewModel.getFirebaseStoreProfileImage(it) }
+        uid?.let { userViewModel.getFirebaseStoreProfileImage(it) }
 
         uid?.let { userViewModel.getFollowerAndroidFollowing(it) }
 
@@ -125,14 +120,19 @@ class UserFragment : Fragment() {
 
             if (it.followers.containsKey(currentUserId)) {
                 userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow_cancel)
-                userDataBinding.btnAccountFollowSignout.background.colorFilter = PorterDuffColorFilter(ContextCompat.getColor(view.context,R.color.colorLightGray), PorterDuff.Mode.MULTIPLY)
+                userDataBinding.btnAccountFollowSignout.background.colorFilter =
+                    PorterDuffColorFilter(
+                        ContextCompat.getColor(
+                            view.context,
+                            R.color.colorLightGray
+                        ), PorterDuff.Mode.MULTIPLY
+                    )
             } else {
                 if (uid != currentUserId) {
                     userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow)
                     userDataBinding.btnAccountFollowSignout.background.colorFilter = null
                 }
             }
-
         })
 
     }
@@ -143,15 +143,13 @@ class UserFragment : Fragment() {
         activity?.startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM)
     }
 
-    fun requestFollow() {
-        uid?.let { uId ->
-            currentUserId?.let { currentUserId ->
-                userViewModel.requestFollow(
-                    uId,
-                    currentUserId
-                )
-            }
+    fun btnAccountFollowSignOut() {
+        if (uid == currentUserId) {
+            activity?.finish()
+            startActivity(Intent(activity, LoginActivity::class.java))
+            UserRepository.getInstance().logout()
+        } else {
+            userViewModel.requestFollow(uid!!, currentUserId!!)
         }
     }
-
 }

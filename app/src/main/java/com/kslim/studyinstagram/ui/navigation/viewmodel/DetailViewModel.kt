@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.kslim.studyinstagram.data.repository.UserRepository
-import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -12,7 +11,7 @@ import io.reactivex.schedulers.Schedulers
 class DetailViewModel(private val repository: UserRepository) : ViewModel() {
 
     private val disposables = CompositeDisposable()
-    private val contentDTOs: MutableLiveData<List<ContentDTO>> = MutableLiveData()
+    private val contentDTOs: MutableLiveData<HashMap<String, List<Any>>> = MutableLiveData()
 
     fun requestFirebaseStoreItemList() {
         val disposable = repository.requestFirebaseStoreItemList()
@@ -42,7 +41,8 @@ class DetailViewModel(private val repository: UserRepository) : ViewModel() {
     }
 
 
-    fun getContentDTOList(): MutableLiveData<List<ContentDTO>> = contentDTOs
+
+    fun getContentDTOList(): MutableLiveData<HashMap<String, List<Any>>> = contentDTOs
 
 
     override fun onCleared() {

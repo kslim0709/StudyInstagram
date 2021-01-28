@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.kslim.studyinstagram.data.repository.UserRepository
 import com.kslim.studyinstagram.ui.login.LoginViewModel
 import com.kslim.studyinstagram.ui.navigation.viewmodel.DetailViewModel
+import com.kslim.studyinstagram.ui.navigation.viewmodel.GridViewModel
 import com.kslim.studyinstagram.ui.navigation.viewmodel.UserViewModel
 
 @Suppress("UNCHECKED_CAST")
@@ -26,6 +27,9 @@ class ViewModelProviderFactory() : ViewModelProvider.NewInstanceFactory() {
             }
             modelClass.isAssignableFrom(UserViewModel::class.java) -> {
                 UserViewModel(userRepository!!) as T
+            }
+            modelClass.isAssignableFrom(GridViewModel::class.java) -> {
+                GridViewModel(userRepository!!) as T
             }
             else -> {
                 throw IllegalArgumentException()

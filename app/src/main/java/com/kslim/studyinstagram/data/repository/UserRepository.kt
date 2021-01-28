@@ -35,6 +35,8 @@ class UserRepository private constructor() {
     fun updateFavoriteEvent(uId: String, imageUid: String) =
         firebaseFireStoreApi.updateFavoriteEvent(uId, imageUid)
 
+    fun requestFirebaseStoreAllUserItemList() = firebaseFireStoreApi.requestFirebaseStoreAllUserItemList()
+
     fun requestFirebaseStoreUserItemList(uId: String) =
         firebaseFireStoreApi.requestFirebaseStoreUserItemList(uId)
 
