@@ -11,12 +11,33 @@ class FirebaseAuthApi {
         FirebaseAuth.getInstance()
     }
 
-    fun login(email: String, password: String) = Completable.create { emitter ->
-        firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-            if (!emitter.isDisposed) {
-                emitter.onComplete()
-            } else {
-                emitter.onError(it.exception!!)
+    fun signInAndSignUp(email: String, password: String): Completable {
+        return Completable.create { emitter ->
+            firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    when {
+                        task.isSuccessful -> {
+                            emitter.onComplete()
+                        }
+                        task.exception?.message.isNullOrEmpty() -> {
+                            emitter.onError(Throwable(task.exception?.message))
+                        }
+                        else -> {
+                            login(email, password)
+                        }
+                    }
+                }
+        }
+    }
+
+    fun login(email: String, password: String): Completable {
+        return Completable.create { emitter ->
+            firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    emitter.onComplete()
+                } else if (task.exception?.message.isNullOrEmpty()) {
+                    emitter.onError(Throwable(task.exception?.message))
+                }
             }
         }
     }

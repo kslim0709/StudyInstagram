@@ -17,7 +17,7 @@ class UserRepository private constructor() {
         }
     }
 
-    fun login(email: String, password: String) = firebaseApi.login(email, password)
+    fun signInAndSignUp(email: String, password: String) = firebaseApi.signInAndSignUp(email, password)
 
     fun googleLogin(credential: AuthCredential) = firebaseApi.googleLogin(credential)
 

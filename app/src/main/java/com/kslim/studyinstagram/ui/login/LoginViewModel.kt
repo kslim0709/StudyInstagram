@@ -29,7 +29,7 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
         loginListener?.onStarted()
 
         // calling login from repository to perform the actual authentication
-        val disposable = repository.login(loginEmailText!!, loginPasswordText!!)
+        val disposable = repository.signInAndSignUp(loginEmailText!!, loginPasswordText!!)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({

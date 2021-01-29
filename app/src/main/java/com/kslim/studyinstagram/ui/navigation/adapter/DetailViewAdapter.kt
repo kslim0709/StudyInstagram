@@ -20,6 +20,7 @@ class DetailViewAdapter(private val uId: String?) :
     var detailViewItemClickListener: DetailViewItemClickListener? = null
 
     var contentDTOs: ArrayList<ContentDTO> = arrayListOf()
+    var contentUidList: ArrayList<String> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailViewHolder {
         val binding = DataBindingUtil.inflate(
@@ -32,7 +33,7 @@ class DetailViewAdapter(private val uId: String?) :
     }
 
     override fun onBindViewHolder(holder: DetailViewHolder, position: Int) {
-        holder.onBind(contentDTOs[position])
+        holder.onBind(contentDTOs[position], position)
     }
 
     override fun getItemCount(): Int {
@@ -42,7 +43,7 @@ class DetailViewAdapter(private val uId: String?) :
     inner class DetailViewHolder(private val detailViewBinding: ItemDetailBinding) :
         RecyclerView.ViewHolder(detailViewBinding.root) {
 
-        fun onBind(data: ContentDTO) {
+        fun onBind(data: ContentDTO, position:Int) {
             // UserID
             detailViewBinding.tvDetailProfile.text = data.userId
 
@@ -63,7 +64,7 @@ class DetailViewAdapter(private val uId: String?) :
             // This code is when the button is clicked
             detailViewBinding.ivDetailFavorite.setOnClickListener {
                 if (detailViewItemClickListener != null) {
-                    detailViewItemClickListener?.onItemClick(uId!!, data.imageUid!!)
+                    detailViewItemClickListener?.onItemClick(uId!!, contentUidList[position])
                 }
             }
 

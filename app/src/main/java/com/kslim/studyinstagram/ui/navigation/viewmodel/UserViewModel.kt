@@ -40,34 +40,32 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
                 }
             })
-
-//        val disposable = repository.requestFirebaseStoreUserItemList(uId)
-//            .subscribeOn(Schedulers.io())
-//            .subscribe({
-//                contentDTOs.value = it
-//            }, {
-//                Log.e("UserFragment", "requestFirebaseStoreItemList exception: " + it.message)
-//            })
-//
-//        disposables.add(disposable)
     }
 
     fun getFirebaseStoreProfileImage(uId: String) {
-        val disposable = repository.getFirebaseStoreProfileImage(uId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-
-                Log.v("UserViewModel", "ProfileImage ${it.data}")
-
-                if (it.data != null) {
-                    val url = it.data!!["image"]
-                    profileURL.value = url as String
+        repository.getFirebaseStoreProfileImage(uId).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread()).toObservable()
+            .subscribe(object : Observer<DocumentSnapshot> {
+                override fun onSubscribe(d: Disposable) {
+                    disposables.add(d)
                 }
-            }, {
-                Log.e("UserFragment", "getFirebaseStoreProfileImage exception: " + it.message)
+
+                override fun onNext(t: DocumentSnapshot) {
+                    Log.d("UserFragment", "UserFragment profileImage: ${t.data}")
+                    if (t.data != null) {
+                        val url = t.data!!["image"]
+                        profileURL.value = url as String
+                    }
+                }
+
+                override fun onError(e: Throwable) {
+                    Log.e("UserFragment", "getFirebaseStoreProfileImage exception: " + e.message)
+                }
+
+                override fun onComplete() {
+                }
+
             })
-        disposables.add(disposable)
     }
 
     fun requestFollow(uId: String, currentUid: String) {
@@ -98,19 +96,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 }
 
             })
-
-
-//        val disposable = repository.getFollowerAndroidFollowing(uId)
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({
-//                followDTO.value = it.toObject(FollowDTO::class.java)
-//            }, {
-//                Log.e("UserFragment", "getFirebaseStoreProfileImage exception: " + it.message)
-//            })
-//        disposables.add(disposable)
     }
-
 
     fun getContentDTOList(): MutableLiveData<List<ContentDTO>> = contentDTOs
     fun getFirebaseStoreProfileImageURL(): MutableLiveData<String> = profileURL

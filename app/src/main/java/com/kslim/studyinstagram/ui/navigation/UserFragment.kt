@@ -74,11 +74,6 @@ class UserFragment : Fragment() {
         if (uid == currentUserId) {
             // MyPage
             userDataBinding.btnAccountFollowSignout.text = getString(R.string.signout)
-            userDataBinding.btnAccountFollowSignout.setOnClickListener {
-                activity?.finish()
-                startActivity(Intent(activity, LoginActivity::class.java))
-                userRepository.logout()
-            }
         } else {
             // Other User Page
             userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow)
@@ -100,9 +95,9 @@ class UserFragment : Fragment() {
         userRecyclerView.layoutManager = GridLayoutManager(activity, 3)
 
 
-        currentUserId?.let { userViewModel.requestFirebaseStoreItemList(it) }
+        uid?.let { userViewModel.requestFirebaseStoreItemList(it) }
 
-        currentUserId?.let { userViewModel.getFirebaseStoreProfileImage(it) }
+        uid?.let { userViewModel.getFirebaseStoreProfileImage(it) }
 
         uid?.let { userViewModel.getFollowerAndroidFollowing(it) }
 
@@ -120,12 +115,19 @@ class UserFragment : Fragment() {
 
         userViewModel.getFollowerAndroidFollowingData().observe(this, {
 
+            if (it == null) return@observe
             userDataBinding.tvAccountFollowingCount.text = it.followingCount.toString()
             userDataBinding.tvAccountFollowerCount.text = it.followerCount.toString()
 
             if (it.followers.containsKey(currentUserId)) {
                 userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow_cancel)
-                userDataBinding.btnAccountFollowSignout.background.colorFilter = PorterDuffColorFilter(ContextCompat.getColor(view.context,R.color.colorLightGray), PorterDuff.Mode.MULTIPLY)
+                userDataBinding.btnAccountFollowSignout.background.colorFilter =
+                    PorterDuffColorFilter(
+                        ContextCompat.getColor(
+                            view.context,
+                            R.color.colorLightGray
+                        ), PorterDuff.Mode.MULTIPLY
+                    )
             } else {
                 if (uid != currentUserId) {
                     userDataBinding.btnAccountFollowSignout.text = getString(R.string.follow)
@@ -143,13 +145,14 @@ class UserFragment : Fragment() {
         activity?.startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM)
     }
 
-    fun requestFollow() {
-        uid?.let { uId ->
-            currentUserId?.let { currentUserId ->
-                userViewModel.requestFollow(
-                    uId,
-                    currentUserId
-                )
+    fun btnAccountFollowSignOut() {
+        if (uid != null && currentUserId != null) {
+            if (uid == currentUserId) {
+                activity?.finish()
+                startActivity(Intent(activity, LoginActivity::class.java))
+                userRepository.logout()
+            } else {
+                userViewModel.requestFollow(uid!!, currentUserId!!)
             }
         }
     }

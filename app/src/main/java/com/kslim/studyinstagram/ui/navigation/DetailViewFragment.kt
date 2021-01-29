@@ -61,7 +61,8 @@ class DetailViewFragment : Fragment(), DetailViewAdapter.DetailViewItemClickList
         detailViewModel.requestFirebaseStoreItemList()
 
         detailViewModel.getContentDTOList().observe(this, {
-            detailViewAdapter.contentDTOs = it as ArrayList<ContentDTO>
+            detailViewAdapter.contentDTOs = it["item"] as ArrayList<ContentDTO>
+            detailViewAdapter.contentUidList = it["contentUid"] as ArrayList<String>
             detailViewAdapter.notifyDataSetChanged()
 
         })

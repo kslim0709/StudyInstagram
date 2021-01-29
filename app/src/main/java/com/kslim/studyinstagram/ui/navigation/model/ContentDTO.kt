@@ -8,7 +8,6 @@ class ContentDTO(
     var timeStamp: Long? = null,
     var favoriteCount: Int = 0,
     var favorites: MutableMap<String, Boolean> = HashMap(),
-    var imageUid: String? = null
 ) {
     data class Comment(
         var uId: String? = null,
