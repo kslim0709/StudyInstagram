@@ -5,6 +5,7 @@ import com.google.firebase.firestore.*
 import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import com.kslim.studyinstagram.ui.navigation.model.FollowDTO
+import com.kslim.studyinstagram.utils.FcmPush
 import io.reactivex.*
 
 class FirebaseFireStoreApi {
@@ -79,6 +80,9 @@ class FirebaseFireStoreApi {
         alarmDTO.kind = 0
         alarmDTO.timeStamp = System.currentTimeMillis()
         firebaseStore.collection("alarms").document().set(alarmDTO)
+
+//        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
+//        FcmPush.instance.sendMessage(destinationUid, "HowIstagram", message)
     }
 
     fun requestFirebaseStoreAllUserItemList(): Flowable<List<ContentDTO>> {
@@ -203,6 +207,9 @@ class FirebaseFireStoreApi {
         alarmDTO.kind = 2
         alarmDTO.timeStamp = System.currentTimeMillis()
         firebaseStore.collection("alarms").document().set(alarmDTO)
+
+        //        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
+//        FcmPush.instance.sendMessage(destinationUid, "HowIstagram", message)
     }
 
     fun getFollowerAndroidFollowing(uId: String): Flowable<DocumentSnapshot> {

@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.kslim.studyinstagram.R
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         //Set default screen
         mainBinding.bottomNavigation.selectedItemId = R.id.action_home
+        registerPushToken()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -97,6 +99,17 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         mainBinding.toolbarUserName.visibility = View.GONE
         mainBinding.toolbarBtnBack.visibility = View.GONE
         mainBinding.toolbarTitleImage.visibility = View.VISIBLE
+    }
+
+    fun registerPushToken() {
+        FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
+            val token = task.result?.token
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            val map = mutableMapOf<String, Any>()
+            map["pushToken"] = token!!
+
+            FirebaseFirestore.getInstance().collection("pushtokens").document(uid!!).set(map)
+        }
     }
 
 
