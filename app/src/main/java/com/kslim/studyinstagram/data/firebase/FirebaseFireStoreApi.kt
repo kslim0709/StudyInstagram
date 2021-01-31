@@ -1,6 +1,6 @@
 package com.kslim.studyinstagram.data.firebase
 
-import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
 import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
@@ -54,6 +54,7 @@ class FirebaseFireStoreApi {
                 // when the button is not clicked
                 contentDTO.favoriteCount = contentDTO.favoriteCount + 1
                 contentDTO.favorites[uId] = true
+                favoriteAlarm(contentDTO.uId!!)
             }
 
             transition.set(tsDoc, contentDTO)
@@ -77,28 +78,8 @@ class FirebaseFireStoreApi {
         alarmDTO.uId = FirebaseAuth.getInstance().currentUser?.uid
         alarmDTO.kind = 0
         alarmDTO.timeStamp = System.currentTimeMillis()
-        FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
+        firebaseStore.collection("alarms").document().set(alarmDTO)
     }
-
-//
-//    fun requestFirebaseStoreUserItemList(uId: String) = Single.create<List<ContentDTO>> { emitter ->
-//        firebaseStore.collection("images").whereEqualTo("uid", uId)
-//            .addSnapshotListener { values, error ->
-//                // Sometimes, This code return null of querySnapshot when it sign out
-//                if (error != null) {
-//                    emitter.onError(error)
-//                    return@addSnapshotListener
-//                }
-//                //Get Data
-//                val itemList: ArrayList<ContentDTO> = arrayListOf()
-//                for (value in values!!.documents) {
-//                    val item = value.toObject(ContentDTO::class.java)
-//                    itemList.add(item!!)
-//                }
-//                emitter.onSuccess(itemList)
-//
-//            }
-//    }
 
     fun requestFirebaseStoreAllUserItemList(): Flowable<List<ContentDTO>> {
         return Flowable.create({ emitter ->
@@ -194,33 +175,23 @@ class FirebaseFireStoreApi {
                 followDTO = FollowDTO()
                 followDTO!!.followerCount = 1
                 followDTO!!.followers[currentUserUid] = true
-                transaction.set(tsDocFollower, followDTO!!)
-        firebaseStore.runTransaction { transition ->
-            var followerDTO = transition.get(tsDocFollower).toObject(FollowDTO::class.java)
-            if (followerDTO == null) {
-                followerDTO = FollowDTO()
-                followerDTO.followerCount = 1
-                followerDTO.followers[currentUserUid] = true
                 followerAlarm(uId)
-                transition.set(tsDocFollower, followerDTO)
+                transaction.set(tsDocFollower, followDTO!!)
+
+                if (followDTO!!.followers.containsKey(currentUserUid)) {
+                    //It cancel my follower when I follow a third person
+                    followDTO!!.followerCount = followDTO!!.followerCount - 1
+                    followDTO!!.followers.remove(currentUserUid)
+                } else {
+                    //It add my follower when I don't follow a third person
+                    followDTO!!.followerCount = followDTO!!.followerCount + 1
+                    followDTO!!.followers[currentUserUid] = true
+                    followerAlarm(uId)
+
+                }
+                transaction.set(tsDocFollower, followDTO!!)
                 return@runTransaction
             }
-
-            if (followDTO!!.followers.containsKey(currentUserUid)) {
-                //It cancel my follower when I follow a third person
-                followDTO!!.followerCount = followDTO!!.followerCount - 1
-                followDTO!!.followers.remove(currentUserUid)
-            } else {
-                //It add my follower when I don't follow a third person
-                followDTO!!.followerCount = followDTO!!.followerCount + 1
-                followDTO!!.followers[currentUserUid] = true
-                // It add my follower when I don't follow a third person
-                followerDTO.followerCount = followerDTO.followerCount + 1
-                followerDTO.followers[currentUserUid]
-                followerAlarm(uId)
-            }
-            transaction.set(tsDocFollower, followDTO!!)
-            return@runTransaction
         }
     }
 
@@ -231,26 +202,8 @@ class FirebaseFireStoreApi {
         alarmDTO.uId = FirebaseAuth.getInstance().currentUser?.uid
         alarmDTO.kind = 2
         alarmDTO.timeStamp = System.currentTimeMillis()
-        FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
+        firebaseStore.collection("alarms").document().set(alarmDTO)
     }
-
-//    fun getFollowerAndroidFollowing(uId: String) =
-//        Single.create<DocumentSnapshot> { emitter ->
-//            firebaseStore.collection("users").document(uId)
-//                .addSnapshotListener { documentSnapshot, exception ->
-//                    if (exception != null) {
-//                        emitter.onError(exception)
-//                        return@addSnapshotListener
-//                    }
-//                    if (documentSnapshot == null) {
-//                        emitter.onError(Throwable("Data is null"))
-//                        return@addSnapshotListener
-//                    }
-//
-//                    emitter.onSuccess(documentSnapshot)
-//                }
-//        }
-
 
     fun getFollowerAndroidFollowing(uId: String): Flowable<DocumentSnapshot> {
         return Flowable.create({ emitter ->
