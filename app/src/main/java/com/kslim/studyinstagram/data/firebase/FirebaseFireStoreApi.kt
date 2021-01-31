@@ -1,7 +1,6 @@
 package com.kslim.studyinstagram.data.firebase
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
 import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
@@ -15,37 +14,34 @@ class FirebaseFireStoreApi {
 
 
     // Firebase Storage
-    fun requestFirebaseStoreItemList() = Single.create<HashMap<String, List<Any>>> { emitter ->
-        firebaseStore.collection("images").orderBy("timeStamp")
-            .addSnapshotListener { values, error ->
+    fun requestFirebaseStoreItemList(): Flowable<HashMap<String, List<Any>>> {
+        return Flowable.create({ emitter ->
+            val reference = firebaseStore.collection("images").orderBy("timeStamp")
+            val registration = reference.addSnapshotListener { documentSnapshot, error ->
                 if (error != null) {
                     emitter.onError(error)
-                    return@addSnapshotListener
                 }
-                Log.v("Firebase", "requestFirebaseStoreItemList ${values}")
-                val itemList: ArrayList<ContentDTO> = arrayListOf()
-                val contentUidList: ArrayList<String> = arrayListOf()
-                val dataMap: HashMap<String, List<Any>> = HashMap()
-                for (value in values!!.documents) {
-                    val item = value.toObject(ContentDTO::class.java)
-                    itemList.add(item!!)
-                    contentUidList.add(value.id)
-
+                if (documentSnapshot != null) {
+                    val dataMap: HashMap<String, List<Any>> = HashMap()
+                    val itemList: ArrayList<ContentDTO> = arrayListOf()
+                    val contentUidList: ArrayList<String> = arrayListOf()
+                    for (value in documentSnapshot.documents) {
+                        val item = value.toObject(ContentDTO::class.java)
+                        itemList.add(item!!)
+                        contentUidList.add(value.id)
+                    }
+                    dataMap["item"] = itemList
+                    dataMap["contentUid"] = contentUidList
+                    emitter.onNext(dataMap)
                 }
-                dataMap["item"] = itemList
-                dataMap["contentUid"] = contentUidList
-                emitter.onSuccess(dataMap)
-
             }
+            emitter.setCancellable { registration.remove() }
+        }, BackpressureStrategy.BUFFER)
     }
 
-//    fun requestFirebaseStoreItemList() : Task<QuerySnapshot> {
-//        return firebaseStore.collection("images").orderBy("timeStamp").get()
-//    }
 
-
-    fun updateFavoriteEvent(uId: String, imageUid: String) = Completable.create { emitter ->
-        val tsDoc = firebaseStore.collection("images").document(imageUid)
+    fun updateFavoriteEvent(uId: String, contentUid: String) = Completable.create { emitter ->
+        val tsDoc = firebaseStore.collection("images").document(contentUid)
         firebaseStore.runTransaction { transition ->
             val contentDTO = transition.get(tsDoc).toObject(ContentDTO::class.java)
 
@@ -58,7 +54,6 @@ class FirebaseFireStoreApi {
                 // when the button is not clicked
                 contentDTO.favoriteCount = contentDTO.favoriteCount + 1
                 contentDTO.favorites[uId] = true
-                favoriteAlarm(contentDTO.uId!!)
             }
 
             transition.set(tsDoc, contentDTO)
@@ -147,53 +142,59 @@ class FirebaseFireStoreApi {
         }, BackpressureStrategy.BUFFER)
     }
 
-    fun getFirebaseStoreProfileImage(uId: String) = Single.create<DocumentSnapshot> { emitter ->
-        firebaseStore.collection("profileImages").document(uId)
-            .addSnapshotListener { value, error ->
+    fun getFirebaseStoreProfileImage(uId: String): Flowable<DocumentSnapshot> {
+        return Flowable.create({ emitter ->
+            val reference = firebaseStore.collection("profileImages").document(uId)
+            val registration = reference.addSnapshotListener { documentSnapshot, error ->
                 if (error != null) {
                     emitter.onError(error)
                     return@addSnapshotListener
                 }
-                Log.v("Firebase", "profileImage ${value}")
-                if (value != null) {
-                    Log.v("Firebase", "onSuccess profileImage ${value}")
-                    emitter.onSuccess(value)
-                } else {
-                    emitter.onError(Throwable("Data is null"))
+                if (documentSnapshot != null) {
+                    emitter.onNext(documentSnapshot)
                 }
             }
+            emitter.setCancellable { registration.remove() }
+        }, BackpressureStrategy.BUFFER)
     }
 
     fun requestFollow(uId: String, currentUserUid: String) = Completable.create { emitter ->
 
         // Save data to my account
         val tsDocFollowing = firebaseStore.collection("users").document(currentUserUid)
-        firebaseStore.runTransaction { transition ->
-            var followDTO = transition.get(tsDocFollowing).toObject(FollowDTO::class.java)
+        firebaseStore.runTransaction { transaction ->
+            var followDTO = transaction.get(tsDocFollowing).toObject(FollowDTO::class.java)
             if (followDTO == null) {
                 followDTO = FollowDTO()
                 followDTO.followingCount = 1
-                followDTO.followers[uId] = true
+                followDTO.followings[uId] = true
 
-                transition.set(tsDocFollowing, followDTO)
+                transaction.set(tsDocFollowing, followDTO)
                 return@runTransaction
             }
 
             if (followDTO.followings.containsKey(uId)) {
-                // It remove following third person when a third person follow me
+                //It remove following third person when a third person follow me
                 followDTO.followingCount = followDTO.followingCount - 1
-                followDTO.followers.remove(uId)
+                followDTO.followings.remove(uId)
             } else {
                 //It add following third person when a third person do not follow me
                 followDTO.followingCount = followDTO.followingCount + 1
-                followDTO.followers[uId] = true
-
+                followDTO.followings[uId] = true
             }
-            transition.set(tsDocFollowing, followDTO)
+            transaction.set(tsDocFollowing, followDTO)
             return@runTransaction
         }
-        // Save Data to third person
+
+        //Save data to third account
         val tsDocFollower = firebaseStore.collection("users").document(uId)
+        firebaseStore.runTransaction { transaction ->
+            var followDTO = transaction.get(tsDocFollower).toObject(FollowDTO::class.java)
+            if (followDTO == null) {
+                followDTO = FollowDTO()
+                followDTO!!.followerCount = 1
+                followDTO!!.followers[currentUserUid] = true
+                transaction.set(tsDocFollower, followDTO!!)
         firebaseStore.runTransaction { transition ->
             var followerDTO = transition.get(tsDocFollower).toObject(FollowDTO::class.java)
             if (followerDTO == null) {
@@ -205,17 +206,20 @@ class FirebaseFireStoreApi {
                 return@runTransaction
             }
 
-            if (followerDTO.followers.containsKey(currentUserUid)) {
-                // It cancel my follower when I follow a third person
-                followerDTO.followerCount = followerDTO.followerCount - 1
-                followerDTO.followers.remove(currentUserUid)
+            if (followDTO!!.followers.containsKey(currentUserUid)) {
+                //It cancel my follower when I follow a third person
+                followDTO!!.followerCount = followDTO!!.followerCount - 1
+                followDTO!!.followers.remove(currentUserUid)
             } else {
+                //It add my follower when I don't follow a third person
+                followDTO!!.followerCount = followDTO!!.followerCount + 1
+                followDTO!!.followers[currentUserUid] = true
                 // It add my follower when I don't follow a third person
                 followerDTO.followerCount = followerDTO.followerCount + 1
                 followerDTO.followers[currentUserUid]
                 followerAlarm(uId)
             }
-            transition.set(tsDocFollower, followerDTO)
+            transaction.set(tsDocFollower, followDTO!!)
             return@runTransaction
         }
     }

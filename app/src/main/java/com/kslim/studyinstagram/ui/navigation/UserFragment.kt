@@ -4,7 +4,6 @@ import android.content.Intent
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +35,8 @@ class UserFragment : Fragment() {
     private lateinit var userAdapter: UserAdapter
     private lateinit var userRecyclerView: RecyclerView
 
+    private val userRepository: UserRepository = UserRepository.getInstance()
+
     companion object {
         var PICK_PROFILE_FROM_ALBUM = 10
 
@@ -57,7 +58,7 @@ class UserFragment : Fragment() {
         userDataBinding.userFragment = this@UserFragment
 
 
-        val provider = ViewModelProviderFactory(UserRepository.getInstance())
+        val provider = ViewModelProviderFactory(userRepository)
         userViewModel = ViewModelProvider(this, provider).get(UserViewModel::class.java)
 
         return userDataBinding.root
@@ -68,8 +69,8 @@ class UserFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         uid = arguments?.getString("destinationUid")
-        currentUserId = UserRepository.getInstance().currentUser()?.uid
-        Log.v("UserFragment", "viewCreate uid: ${uid},, currentUserId: ${currentUserId}")
+        currentUserId = userRepository.currentUser()?.uid
+
         if (uid == currentUserId) {
             // MyPage
             userDataBinding.btnAccountFollowSignout.text = getString(R.string.signout)
@@ -115,6 +116,7 @@ class UserFragment : Fragment() {
 
         userViewModel.getFollowerAndroidFollowingData().observe(this, {
 
+            if (it == null) return@observe
             userDataBinding.tvAccountFollowingCount.text = it.followingCount.toString()
             userDataBinding.tvAccountFollowerCount.text = it.followerCount.toString()
 
@@ -144,12 +146,14 @@ class UserFragment : Fragment() {
     }
 
     fun btnAccountFollowSignOut() {
-        if (uid == currentUserId) {
-            activity?.finish()
-            startActivity(Intent(activity, LoginActivity::class.java))
-            UserRepository.getInstance().logout()
-        } else {
-            userViewModel.requestFollow(uid!!, currentUserId!!)
+        if (uid != null && currentUserId != null) {
+            if (uid == currentUserId) {
+                activity?.finish()
+                startActivity(Intent(activity, LoginActivity::class.java))
+                userRepository.logout()
+            } else {
+                userViewModel.requestFollow(uid!!, currentUserId!!)
+            }
         }
     }
 }

@@ -6,24 +6,50 @@ import androidx.lifecycle.ViewModel
 import com.kslim.studyinstagram.data.repository.UserRepository
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
 class DetailViewModel(private val repository: UserRepository) : ViewModel() {
 
     private val disposables = CompositeDisposable()
-    private val contentDTOs: MutableLiveData<HashMap<String, List<Any>>> = MutableLiveData()
+    private val dataMap: MutableLiveData<HashMap<String, List<Any>>> = MutableLiveData()
 
     fun requestFirebaseStoreItemList() {
-        val disposable = repository.requestFirebaseStoreItemList()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                contentDTOs.value = it
-            }, {
-                Log.e("DetailViewFragment", "requestFirebaseStoreItemList exception: " + it.message)
+        repository.requestFirebaseStoreItemList().subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread()).toObservable()
+            .subscribe(object : io.reactivex.Observer<HashMap<String, List<Any>>> {
+                override fun onSubscribe(d: Disposable) {
+                    disposables.add(d)
+                }
+
+                override fun onNext(t: HashMap<String, List<Any>>) {
+                    dataMap.value = t
+                }
+
+                override fun onError(e: Throwable) {
+                    Log.e(
+                        "DetailViewFragment",
+                        "requestFirebaseStoreItemList exception: ${e.message}"
+                    )
+                }
+
+                override fun onComplete() {
+                    TODO("Not yet implemented")
+                }
+
             })
 
-        disposables.add(disposable)
+
+//        val disposable = repository.requestFirebaseStoreItemList()
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+//                contentDTOs.value = it
+//            }, {
+//                Log.e("DetailViewFragment", "requestFirebaseStoreItemList exception: " + it.message)
+//            })
+//
+//        disposables.add(disposable)
     }
 
     fun updateFavoriteEvent(uId: String, imageUid: String) {
@@ -41,8 +67,7 @@ class DetailViewModel(private val repository: UserRepository) : ViewModel() {
     }
 
 
-
-    fun getContentDTOList(): MutableLiveData<HashMap<String, List<Any>>> = contentDTOs
+    fun getContentDTOList(): MutableLiveData<HashMap<String, List<Any>>> = dataMap
 
 
     override fun onCleared() {

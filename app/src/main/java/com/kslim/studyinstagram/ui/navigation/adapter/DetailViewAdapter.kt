@@ -1,17 +1,12 @@
 package com.kslim.studyinstagram.ui.navigation.adapter
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.databinding.ItemDetailBinding
-import com.kslim.studyinstagram.ui.navigation.CommentActivity
-import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 
 class DetailViewAdapter(private val uId: String?) :

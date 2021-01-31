@@ -1,7 +1,6 @@
 package com.kslim.studyinstagram.ui.navigation
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -62,12 +61,10 @@ class DetailViewFragment : Fragment(), DetailViewAdapter.DetailViewItemClickList
         detailViewModel.requestFirebaseStoreItemList()
 
         detailViewModel.getContentDTOList().observe(this, {
+            detailViewAdapter.contentDTOs = it["item"] as ArrayList<ContentDTO>
+            detailViewAdapter.contentUidList = it["contentUid"] as ArrayList<String>
+            detailViewAdapter.notifyDataSetChanged()
 
-            if (it != null && it.isNotEmpty()) {
-                detailViewAdapter.contentDTOs = it["item"] as ArrayList<ContentDTO>
-                detailViewAdapter.contentUidList = it["contentUid"] as ArrayList<String>
-                detailViewAdapter.notifyDataSetChanged()
-            }
         })
     }
 
@@ -78,7 +75,6 @@ class DetailViewFragment : Fragment(), DetailViewAdapter.DetailViewItemClickList
     override fun onProfileClick(uID: String, userID: String) {
         val fragment = UserFragment()
         val bundle = Bundle()
-        Log.v("DetailView", "profileClick uid: ${uID}, userID: ${userID}")
         bundle.putString("destinationUid", uID)
         bundle.putString("userId", userID)
         fragment.arguments = bundle

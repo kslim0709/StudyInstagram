@@ -39,7 +39,8 @@
                 android:layout_height="match_parent"
                 android:layout_above="@+id/btn_account_follow_signout"
                 android:layout_toEndOf="@+id/iv_account_profile"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="0dp"
