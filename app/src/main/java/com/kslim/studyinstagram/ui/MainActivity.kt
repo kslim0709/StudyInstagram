@@ -14,7 +14,7 @@ import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.kslim.studyinstagram.R
@@ -101,9 +101,9 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         mainBinding.toolbarTitleImage.visibility = View.VISIBLE
     }
 
-    fun registerPushToken() {
-        FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
-            val token = task.result?.token
+    private fun registerPushToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            val token = task.result
             val uid = FirebaseAuth.getInstance().currentUser?.uid
             val map = mutableMapOf<String, Any>()
             map["pushToken"] = token!!

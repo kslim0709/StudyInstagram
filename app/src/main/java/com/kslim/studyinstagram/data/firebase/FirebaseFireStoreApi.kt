@@ -81,8 +81,8 @@ class FirebaseFireStoreApi {
         alarmDTO.timeStamp = System.currentTimeMillis()
         firebaseStore.collection("alarms").document().set(alarmDTO)
 
-//        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
-//        FcmPush.instance.sendMessage(destinationUid, "HowIstagram", message)
+        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
+        FcmPush.instance.sendMessage(destinationUid, "Howlstagram", message)
     }
 
     fun requestFirebaseStoreAllUserItemList(): Flowable<List<ContentDTO>> {
@@ -145,11 +145,11 @@ class FirebaseFireStoreApi {
 
     fun requestFollow(uId: String, currentUserUid: String) = Completable.create { emitter ->
 
-        // Save data to my account
-        val tsDocFollowing = firebaseStore.collection("users").document(currentUserUid)
+        //Save data to my account
+        var tsDocFollowing = firebaseStore.collection("users").document(currentUserUid)
         firebaseStore.runTransaction { transaction ->
             var followDTO = transaction.get(tsDocFollowing).toObject(FollowDTO::class.java)
-            if (followDTO == null) {
+            if(followDTO == null){
                 followDTO = FollowDTO()
                 followDTO.followingCount = 1
                 followDTO.followings[uId] = true
@@ -158,44 +158,45 @@ class FirebaseFireStoreApi {
                 return@runTransaction
             }
 
-            if (followDTO.followings.containsKey(uId)) {
+            if(followDTO.followings.containsKey(uId)){
                 //It remove following third person when a third person follow me
                 followDTO.followingCount = followDTO.followingCount - 1
                 followDTO.followings.remove(uId)
-            } else {
+            }else{
                 //It add following third person when a third person do not follow me
                 followDTO.followingCount = followDTO.followingCount + 1
                 followDTO.followings[uId] = true
             }
-            transaction.set(tsDocFollowing, followDTO)
+            transaction.set(tsDocFollowing,followDTO)
             return@runTransaction
         }
 
         //Save data to third account
-        val tsDocFollower = firebaseStore.collection("users").document(uId)
+
+        var tsDocFollower = firebaseStore.collection("users").document(uId)
         firebaseStore.runTransaction { transaction ->
             var followDTO = transaction.get(tsDocFollower).toObject(FollowDTO::class.java)
-            if (followDTO == null) {
+            if(followDTO == null){
                 followDTO = FollowDTO()
                 followDTO!!.followerCount = 1
                 followDTO!!.followers[currentUserUid] = true
                 followerAlarm(uId)
-                transaction.set(tsDocFollower, followDTO!!)
-
-                if (followDTO!!.followers.containsKey(currentUserUid)) {
-                    //It cancel my follower when I follow a third person
-                    followDTO!!.followerCount = followDTO!!.followerCount - 1
-                    followDTO!!.followers.remove(currentUserUid)
-                } else {
-                    //It add my follower when I don't follow a third person
-                    followDTO!!.followerCount = followDTO!!.followerCount + 1
-                    followDTO!!.followers[currentUserUid] = true
-                    followerAlarm(uId)
-
-                }
-                transaction.set(tsDocFollower, followDTO!!)
+                transaction.set(tsDocFollower,followDTO!!)
                 return@runTransaction
             }
+
+            if(followDTO!!.followers.containsKey(currentUserUid)){
+                //It cancel my follower when I follow a third person
+                followDTO!!.followerCount = followDTO!!.followerCount - 1
+                followDTO!!.followers.remove(currentUserUid)
+            }else{
+                //It add my follower when I don't follow a third person
+                followDTO!!.followerCount = followDTO!!.followerCount + 1
+                followDTO!!.followers[currentUserUid] = true
+                followerAlarm(uId)
+            }
+            transaction.set(tsDocFollower,followDTO!!)
+            return@runTransaction
         }
     }
 
@@ -208,8 +209,8 @@ class FirebaseFireStoreApi {
         alarmDTO.timeStamp = System.currentTimeMillis()
         firebaseStore.collection("alarms").document().set(alarmDTO)
 
-        //        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
-//        FcmPush.instance.sendMessage(destinationUid, "HowIstagram", message)
+        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
+        FcmPush.instance.sendMessage(destinationUid, "HowIstagram", message)
     }
 
     fun getFollowerAndroidFollowing(uId: String): Flowable<DocumentSnapshot> {

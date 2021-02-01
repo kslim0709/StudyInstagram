@@ -1,16 +1,17 @@
 package com.kslim.studyinstagram.utils
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.kslim.studyinstagram.ui.navigation.model.PushDTO
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import com.squareup.okhttp.*
 import java.io.IOException
 
 class FcmPush {
-    var JSON = "application/json; charset=utf-8".toMediaTypeOrNull()
-    var URL = "https://fcm.googleapis.com/v1/projects/myproject-b5ae1/messages:send"
-    var serverKey = ""
+    var JSON: MediaType = MediaType.parse("application/json; charset=utf-8")
+    var URL = "https://fcm.googleapis.com/fcm/send"
+    var serverKey =
+        "AAAA82TYrts:APA91bFpTSvMc5C24RE-wdxKcTAJoHe0LV6xpv2HNU2DNKuVxNmVVPs0gckaiFRtzYXW0CB2fcdQfXgUVEMroSrKQQ06CFRNWakHdAcS1D10W2NRLjRM_26ToliYWH4XMfJJL5s4dtE4"
     var gson: Gson? = null
     var okHttpClient: OkHttpClient? = null
 
@@ -34,21 +35,20 @@ class FcmPush {
                     pushDTO.notification.title = title
                     pushDTO.notification.body = message
 
-                    var body = RequestBody.create(JSON, gson?.toJson(pushDTO)!!)
-                    var request = Request.Builder()
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("Authorization", "key=" + serverKey)
-                        .url(URL)
-                        .post(body)
-                        .build()
+                    val pushMessage = gson?.toJson(pushDTO)
+
+                    var request =
+                        Request.Builder().url(URL).addHeader("Content-Type", "application/json")
+                            .addHeader("Authorization", "key=" + serverKey)
+                            .post(RequestBody.create(JSON, pushMessage)).build()
 
                     okHttpClient?.newCall(request)?.enqueue(object : Callback {
-                        override fun onFailure(call: Call, e: IOException) {
-                            TODO("Not yet implemented")
+                        override fun onFailure(request: Request?, e: IOException?) {
+                            Log.e("FCMPush", "onFailure: ${e?.message}")
                         }
 
-                        override fun onResponse(call: Call, response: Response) {
-                            println(response.body?.string())
+                        override fun onResponse(response: Response?) {
+                            Log.v("FCMPush", response?.body().toString())
                         }
 
                     })

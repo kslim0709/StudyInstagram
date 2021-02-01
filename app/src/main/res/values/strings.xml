@@ -6,6 +6,8 @@
 
     <string name="date_format_pattern">yyyyMMdd_HHmmss</string>
 
+    <string name="default_notification_channel_id">Channel ID</string>
+
     <!-- Sign In -->
     <string name="email">Email</string>
     <string name="password">Password</string>

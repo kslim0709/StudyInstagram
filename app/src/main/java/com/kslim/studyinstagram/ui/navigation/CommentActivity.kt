@@ -1,7 +1,7 @@
 package com.kslim.studyinstagram.ui.navigation
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -9,10 +9,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.databinding.ActivityCommentBinding
-import com.kslim.studyinstagram.databinding.ActivityMainBinding
 import com.kslim.studyinstagram.ui.navigation.adapter.CommentAdapter
 import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
+import com.kslim.studyinstagram.utils.FcmPush
 
 class CommentActivity : AppCompatActivity() {
 
@@ -54,7 +54,7 @@ class CommentActivity : AppCompatActivity() {
         commentBinding.etCommentEdit.setText("")
     }
 
-    fun commentAlarm(destinationUid: String, message: String) {
+    private fun commentAlarm(destinationUid: String, message: String) {
         var alarmDTO = AlarmDTO()
         alarmDTO.destinationUid = destinationUid
         alarmDTO.userId = FirebaseAuth.getInstance().currentUser?.email
@@ -63,5 +63,9 @@ class CommentActivity : AppCompatActivity() {
         alarmDTO.timeStamp = System.currentTimeMillis()
         alarmDTO.message = message
         FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
+
+        var msg =
+            FirebaseAuth.getInstance().currentUser?.email + " " + getString(R.string.alarm_comment) + " of " + message
+        FcmPush.instance.sendMessage(destinationUid, getString(R.string.app_name), msg)
     }
 }
