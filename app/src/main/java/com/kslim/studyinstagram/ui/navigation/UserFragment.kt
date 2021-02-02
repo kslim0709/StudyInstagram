@@ -24,6 +24,7 @@ import com.kslim.studyinstagram.ui.login.LoginActivity
 import com.kslim.studyinstagram.ui.navigation.adapter.UserAdapter
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import com.kslim.studyinstagram.ui.navigation.viewmodel.UserViewModel
+import com.kslim.studyinstagram.utils.ImageOffsetDecoration
 
 class UserFragment : Fragment() {
     private var uid: String? = null
@@ -94,6 +95,7 @@ class UserFragment : Fragment() {
         userRecyclerView = userDataBinding.recyAccount
         userRecyclerView.adapter = userAdapter
         userRecyclerView.layoutManager = GridLayoutManager(activity, 3)
+        userRecyclerView.addItemDecoration(ImageOffsetDecoration(6))
 
 
         uid?.let { userViewModel.requestFirebaseStoreItemList(it) }

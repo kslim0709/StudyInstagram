@@ -38,18 +38,6 @@ class DetailViewModel(private val repository: UserRepository) : ViewModel() {
                 }
 
             })
-
-
-//        val disposable = repository.requestFirebaseStoreItemList()
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({
-//                contentDTOs.value = it
-//            }, {
-//                Log.e("DetailViewFragment", "requestFirebaseStoreItemList exception: " + it.message)
-//            })
-//
-//        disposables.add(disposable)
     }
 
     fun updateFavoriteEvent(uId: String, imageUid: String) {

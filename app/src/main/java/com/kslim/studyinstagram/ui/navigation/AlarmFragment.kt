@@ -7,24 +7,20 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.ViewModelProviderFactory
 import com.kslim.studyinstagram.data.repository.UserRepository
 import com.kslim.studyinstagram.databinding.FragmentAlarmBinding
-import com.kslim.studyinstagram.databinding.FragmentDetailBinding
 import com.kslim.studyinstagram.ui.navigation.adapter.AlarmAdapter
-import com.kslim.studyinstagram.ui.navigation.adapter.DetailViewAdapter
-import com.kslim.studyinstagram.ui.navigation.adapter.GridAdapter
-import com.kslim.studyinstagram.ui.navigation.viewmodel.DetailViewModel
-import com.kslim.studyinstagram.ui.navigation.viewmodel.GridViewModel
+import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
+import com.kslim.studyinstagram.ui.navigation.viewmodel.AlarmViewModel
 
 class AlarmFragment : Fragment() {
 
     private lateinit var alarmDataBinding: FragmentAlarmBinding
-//    private lateinit var alarmViewModel: DetailViewModel
+    private lateinit var alarmViewModel: AlarmViewModel
 
     private lateinit var alarmAdapter: AlarmAdapter
     private lateinit var alarmRecyclerView: RecyclerView
@@ -32,7 +28,7 @@ class AlarmFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         alarmDataBinding = DataBindingUtil.inflate(
             LayoutInflater.from(activity),
             R.layout.fragment_alarm,
@@ -42,8 +38,8 @@ class AlarmFragment : Fragment() {
 
         alarmDataBinding.alarmFragment = this@AlarmFragment
 
-//        val provider = ViewModelProviderFactory(UserRepository.getInstance())
-//        gridViewModel = ViewModelProvider(this, provider).get(GridViewModel::class.java)
+        val provider = ViewModelProviderFactory(UserRepository.getInstance())
+        alarmViewModel = ViewModelProvider(this, provider).get(AlarmViewModel::class.java)
 
         return alarmDataBinding.root
     }
@@ -56,5 +52,14 @@ class AlarmFragment : Fragment() {
 
         alarmRecyclerView.adapter = alarmAdapter
         alarmRecyclerView.layoutManager = LinearLayoutManager(activity)
+
+        alarmViewModel.requestFirebaseStoreUserAlarmList()
+
+        alarmViewModel.getAlarmDTOList().observe(this, {
+            if (!it.isNullOrEmpty()) {
+                alarmAdapter.alarmDTOList = it as ArrayList<AlarmDTO>
+                alarmAdapter.notifyDataSetChanged()
+            }
+        })
     }
 }

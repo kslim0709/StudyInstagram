@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+            name="itemGrid"
+            type="com.kslim.studyinstagram.ui.navigation.adapter.GridAdapter" />
+    </data>
+
+    <RelativeLayout
+        android:id="@+id/item_image"
+        android:layout_width="match_parent"
+        android:layout_height="118dp">
+
+        <ImageView
+            android:id="@+id/iv_photo"
+            android:layout_width="match_parent"
+            android:layout_height="118dp"
+            android:background="#d9d9d9"
+            android:scaleType="centerCrop"
+            android:visibility="visible" />
+
+    </RelativeLayout>
+
+</layout>

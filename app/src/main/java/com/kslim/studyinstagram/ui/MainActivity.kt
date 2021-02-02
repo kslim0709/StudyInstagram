@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -51,7 +50,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         setToolbarDefault()
-        Log.v("main", "onNaviGation: " + item.itemId)
         when (item.itemId) {
             R.id.action_home -> {
                 val detailViewFragment = DetailViewFragment()
@@ -119,15 +117,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         if (requestCode == UserFragment.PICK_PROFILE_FROM_ALBUM && resultCode == Activity.RESULT_OK) {
             val imageUrl = data?.data
             val uid = FirebaseAuth.getInstance().currentUser?.uid
-//            val storeageRef =
-//                FirebaseStorage.getInstance().reference.child("userProfileImages").child(uid!!)
-//            storeageRef.putFile(imageUrl!!)
-//                .continueWithTask { task: com.google.android.gms.tasks.Task<UploadTask.TaskSnapshot> ->
-//                    return@continueWithTask storeageRef.downloadUrl
-//                }.addOnSuccessListener { uri ->
-//                var map = HashMap<String, Any>()
-//                map["image"] = uri.toString()
-//                FirebaseStorage.getInstance().collection("profileImages").document(uid).set(map)
 
             val storeageRef =
                 FirebaseStorage.getInstance().reference.child("userProfileImages").child(uid!!)

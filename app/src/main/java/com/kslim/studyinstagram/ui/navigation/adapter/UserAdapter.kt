@@ -1,22 +1,26 @@
 package com.kslim.studyinstagram.ui.navigation.adapter
 
+import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.kslim.studyinstagram.R
+import com.kslim.studyinstagram.databinding.ItemGridBinding
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 
 class UserAdapter : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
     var contentDTOs: ArrayList<ContentDTO> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        val width = parent.context.resources.displayMetrics.widthPixels / 3
-
-        val imageView = ImageView(parent.context)
-        imageView.layoutParams = LinearLayoutCompat.LayoutParams(width, width)
-        return UserViewHolder(imageView)
+        val binding = DataBindingUtil.inflate(
+            LayoutInflater.from(parent.context),
+            R.layout.item_grid,
+            parent,
+            false
+        ) as ItemGridBinding
+        return UserViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
@@ -28,14 +32,14 @@ class UserAdapter : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
     }
 
 
-    inner class UserViewHolder(private var imageView: ImageView) :
-        RecyclerView.ViewHolder(imageView) {
+    inner class UserViewHolder(private var itemGridBinding: ItemGridBinding) :
+        RecyclerView.ViewHolder(itemGridBinding.root) {
 
 
         fun onBind(holder: UserViewHolder, position: Int) {
-            val imageView = holder.imageView
+            val imageView = holder.itemGridBinding.ivPhoto
 
-            Glide.with(holder.imageView.context).load(contentDTOs[position].imageUrl)
+            Glide.with(holder.itemGridBinding.root).load(contentDTOs[position].imageUrl)
                 .apply(RequestOptions().centerCrop()).into(imageView)
         }
 

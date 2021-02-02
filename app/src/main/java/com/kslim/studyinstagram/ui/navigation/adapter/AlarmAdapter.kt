@@ -7,7 +7,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.databinding.ItemCommentBinding
@@ -16,20 +15,6 @@ import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 class AlarmAdapter : RecyclerView.Adapter<AlarmAdapter.AlarmViewHolder>() {
     var alarmDTOList: ArrayList<AlarmDTO> = arrayListOf()
 
-    init {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        FirebaseFirestore.getInstance().collection("alarms").whereEqualTo("destinationUid", uid)
-            .addSnapshotListener { querySnapshot, error ->
-                alarmDTOList.clear()
-
-                if (querySnapshot == null) return@addSnapshotListener
-
-                for (snapshot in querySnapshot) {
-                    alarmDTOList.add(snapshot.toObject(AlarmDTO::class.java))
-                }
-                notifyDataSetChanged()
-            }
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmViewHolder {
         val binding = DataBindingUtil.inflate(

@@ -28,16 +28,16 @@ class FcmPush {
         FirebaseFirestore.getInstance().collection("pushtokens").document(destinationUid).get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    var token = task.result?.get("pushToken").toString()
+                    val token = task.result?.get("pushToken").toString()
 
-                    var pushDTO = PushDTO()
+                    val pushDTO = PushDTO()
                     pushDTO.to = token
                     pushDTO.notification.title = title
                     pushDTO.notification.body = message
 
                     val pushMessage = gson?.toJson(pushDTO)
 
-                    var request =
+                    val request =
                         Request.Builder().url(URL).addHeader("Content-Type", "application/json")
                             .addHeader("Authorization", "key=" + serverKey)
                             .post(RequestBody.create(JSON, pushMessage)).build()

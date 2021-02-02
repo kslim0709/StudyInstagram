@@ -1,15 +1,23 @@
 package com.kslim.studyinstagram.data.firebase
 
-import com.google.firebase.auth.FirebaseAuth
+import android.net.Uri
 import com.google.firebase.firestore.*
+import com.google.firebase.storage.FirebaseStorage
 import com.kslim.studyinstagram.ui.navigation.model.AlarmDTO
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import com.kslim.studyinstagram.ui.navigation.model.FollowDTO
 import com.kslim.studyinstagram.utils.FcmPush
 import io.reactivex.*
+import java.util.*
+import kotlin.collections.HashMap
 
-class FirebaseFireStoreApi {
-    private val firebaseStore: FirebaseFirestore by lazy {
+class FirebaseFireStoreApi(private val firebaseAuthApi: FirebaseAuthApi) {
+
+    private val firebaseStore: FirebaseStorage by lazy {
+        FirebaseStorage.getInstance()
+    }
+
+    private val firebaseFireStore: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
     }
 
@@ -17,7 +25,7 @@ class FirebaseFireStoreApi {
     // Firebase Storage
     fun requestFirebaseStoreItemList(): Flowable<HashMap<String, List<Any>>> {
         return Flowable.create({ emitter ->
-            val reference = firebaseStore.collection("images").orderBy("timeStamp")
+            val reference = firebaseFireStore.collection("images").orderBy("timeStamp")
             val registration = reference.addSnapshotListener { documentSnapshot, error ->
                 if (error != null) {
                     emitter.onError(error)
@@ -42,8 +50,8 @@ class FirebaseFireStoreApi {
 
 
     fun updateFavoriteEvent(uId: String, contentUid: String) = Completable.create { emitter ->
-        val tsDoc = firebaseStore.collection("images").document(contentUid)
-        firebaseStore.runTransaction { transition ->
+        val tsDoc = firebaseFireStore.collection("images").document(contentUid)
+        firebaseFireStore.runTransaction { transition ->
             val contentDTO = transition.get(tsDoc).toObject(ContentDTO::class.java)
 
             if (contentDTO!!.favorites.containsKey(uId)) {
@@ -75,20 +83,20 @@ class FirebaseFireStoreApi {
     fun favoriteAlarm(destinationUid: String) {
         var alarmDTO = AlarmDTO()
         alarmDTO.destinationUid = destinationUid
-        alarmDTO.userId = FirebaseAuth.getInstance().currentUser?.email
-        alarmDTO.uId = FirebaseAuth.getInstance().currentUser?.uid
+        alarmDTO.userId = firebaseAuthApi.currentUser()?.email
+        alarmDTO.uId = firebaseAuthApi.currentUser()?.uid
         alarmDTO.kind = 0
         alarmDTO.timeStamp = System.currentTimeMillis()
-        firebaseStore.collection("alarms").document().set(alarmDTO)
+        firebaseFireStore.collection("alarms").document().set(alarmDTO)
 
-        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
+        val message = firebaseAuthApi.currentUser()?.email + "좋아요"
         FcmPush.instance.sendMessage(destinationUid, "Howlstagram", message)
     }
 
     fun requestFirebaseStoreAllUserItemList(): Flowable<List<ContentDTO>> {
         return Flowable.create({ emitter ->
             val reference: Query =
-                firebaseStore.collection("images")
+                firebaseFireStore.collection("images")
             val registration = reference.addSnapshotListener { documentSnapshot, e ->
                 if (e != null) {
                     emitter.onError(e)
@@ -109,7 +117,7 @@ class FirebaseFireStoreApi {
     fun requestFirebaseStoreUserItemList(uId: String?): Flowable<List<ContentDTO>> {
         return Flowable.create({ emitter ->
             val reference: Query =
-                firebaseStore.collection("images").whereEqualTo("uid", uId)
+                firebaseFireStore.collection("images").whereEqualTo("uid", uId)
             val registration = reference.addSnapshotListener { documentSnapshot, e ->
                 if (e != null) {
                     emitter.onError(e)
@@ -129,7 +137,7 @@ class FirebaseFireStoreApi {
 
     fun getFirebaseStoreProfileImage(uId: String): Flowable<DocumentSnapshot> {
         return Flowable.create({ emitter ->
-            val reference = firebaseStore.collection("profileImages").document(uId)
+            val reference = firebaseFireStore.collection("profileImages").document(uId)
             val registration = reference.addSnapshotListener { documentSnapshot, error ->
                 if (error != null) {
                     emitter.onError(error)
@@ -146,10 +154,10 @@ class FirebaseFireStoreApi {
     fun requestFollow(uId: String, currentUserUid: String) = Completable.create { emitter ->
 
         //Save data to my account
-        var tsDocFollowing = firebaseStore.collection("users").document(currentUserUid)
-        firebaseStore.runTransaction { transaction ->
+        var tsDocFollowing = firebaseFireStore.collection("users").document(currentUserUid)
+        firebaseFireStore.runTransaction { transaction ->
             var followDTO = transaction.get(tsDocFollowing).toObject(FollowDTO::class.java)
-            if(followDTO == null){
+            if (followDTO == null) {
                 followDTO = FollowDTO()
                 followDTO.followingCount = 1
                 followDTO.followings[uId] = true
@@ -158,44 +166,44 @@ class FirebaseFireStoreApi {
                 return@runTransaction
             }
 
-            if(followDTO.followings.containsKey(uId)){
+            if (followDTO.followings.containsKey(uId)) {
                 //It remove following third person when a third person follow me
                 followDTO.followingCount = followDTO.followingCount - 1
                 followDTO.followings.remove(uId)
-            }else{
+            } else {
                 //It add following third person when a third person do not follow me
                 followDTO.followingCount = followDTO.followingCount + 1
                 followDTO.followings[uId] = true
             }
-            transaction.set(tsDocFollowing,followDTO)
+            transaction.set(tsDocFollowing, followDTO)
             return@runTransaction
         }
 
         //Save data to third account
 
-        var tsDocFollower = firebaseStore.collection("users").document(uId)
-        firebaseStore.runTransaction { transaction ->
+        var tsDocFollower = firebaseFireStore.collection("users").document(uId)
+        firebaseFireStore.runTransaction { transaction ->
             var followDTO = transaction.get(tsDocFollower).toObject(FollowDTO::class.java)
-            if(followDTO == null){
+            if (followDTO == null) {
                 followDTO = FollowDTO()
                 followDTO!!.followerCount = 1
                 followDTO!!.followers[currentUserUid] = true
                 followerAlarm(uId)
-                transaction.set(tsDocFollower,followDTO!!)
+                transaction.set(tsDocFollower, followDTO!!)
                 return@runTransaction
             }
 
-            if(followDTO!!.followers.containsKey(currentUserUid)){
+            if (followDTO!!.followers.containsKey(currentUserUid)) {
                 //It cancel my follower when I follow a third person
                 followDTO!!.followerCount = followDTO!!.followerCount - 1
                 followDTO!!.followers.remove(currentUserUid)
-            }else{
+            } else {
                 //It add my follower when I don't follow a third person
                 followDTO!!.followerCount = followDTO!!.followerCount + 1
                 followDTO!!.followers[currentUserUid] = true
                 followerAlarm(uId)
             }
-            transaction.set(tsDocFollower,followDTO!!)
+            transaction.set(tsDocFollower, followDTO!!)
             return@runTransaction
         }
     }
@@ -203,20 +211,20 @@ class FirebaseFireStoreApi {
     fun followerAlarm(destinationUid: String) {
         var alarmDTO = AlarmDTO()
         alarmDTO.destinationUid = destinationUid
-        alarmDTO.userId = FirebaseAuth.getInstance().currentUser?.email
-        alarmDTO.uId = FirebaseAuth.getInstance().currentUser?.uid
+        alarmDTO.userId = firebaseAuthApi.currentUser()?.email
+        alarmDTO.uId = firebaseAuthApi.currentUser()?.uid
         alarmDTO.kind = 2
         alarmDTO.timeStamp = System.currentTimeMillis()
-        firebaseStore.collection("alarms").document().set(alarmDTO)
+        firebaseFireStore.collection("alarms").document().set(alarmDTO)
 
-        val message = FirebaseAuth.getInstance().currentUser?.email + "좋아요"
+        val message = firebaseAuthApi.currentUser()?.email + "좋아요"
         FcmPush.instance.sendMessage(destinationUid, "HowIstagram", message)
     }
 
     fun getFollowerAndroidFollowing(uId: String): Flowable<DocumentSnapshot> {
         return Flowable.create({ emitter ->
             val reference: DocumentReference =
-                firebaseStore.collection("users").document(uId)
+                firebaseFireStore.collection("users").document(uId)
             val registration = reference.addSnapshotListener { documentSnapshot, e ->
                 if (e != null) {
                     emitter.onError(e)
@@ -228,4 +236,93 @@ class FirebaseFireStoreApi {
             emitter.setCancellable { registration.remove() }
         }, BackpressureStrategy.BUFFER)
     }
+
+    fun uploadContents(photoUri: Uri, photoName: String, photoExplain: String) =
+        Completable.create { emitter ->
+
+            val storageRef = firebaseStore.reference.child("images").child(photoName)
+
+            // Promise method  ( 권장사항 )
+            storageRef.putFile(photoUri)
+                .continueWithTask {
+                    return@continueWithTask storageRef.downloadUrl
+                }.addOnSuccessListener { uri ->
+                    val contentDTO = ContentDTO()
+                    // Insert downloadUrl of image
+                    contentDTO.imageUrl = uri.toString()
+
+                    // Insert uid of user
+                    contentDTO.uId = firebaseAuthApi.currentUser()?.uid
+
+                    // Insert userId
+                    contentDTO.userId = firebaseAuthApi.currentUser()?.email
+
+                    // Insert explain of content
+                    contentDTO.explain = photoExplain
+
+                    //Insert TimeStamp
+                    contentDTO.timeStamp = System.currentTimeMillis()
+
+                    firebaseFireStore.collection("images").document().set(contentDTO)
+
+                }.addOnCompleteListener {
+                    if (!emitter.isDisposed) {
+                        if (it.isSuccessful) {
+                            emitter.onComplete()
+                        } else {
+                            emitter.onError(it.exception!!)
+                        }
+                    }
+                }
+
+            // Callback method
+//            storageRef?.putFile(it)?.addOnSuccessListener {
+//                Toast.makeText(this, getString(R.string.upload_success), Toast.LENGTH_SHORT).show()
+//                storageRef.downloadUrl.addOnCompleteListener { uri ->
+//                    var contentDTO = ContentDTO()
+//                    // Insert downloadUrl of image
+//                    contentDTO.imageUrl = uri.toString()
+//
+//                    // Insert uid of user
+//                    contentDTO.uId = auth?.currentUser?.uid
+//
+//                    // Insert userId
+//                    contentDTO.userId = auth?.currentUser.email
+//
+//                    // Insert explain of content
+//                    contentDTO.explain = addPhotoBinding.addphotoEditExplain.text.toString()
+//
+//                    //Insert TimeStamp
+//                    contentDTO.timeStamp = System.currentTimeMillis()
+//
+//                    fireStore?.collection("images")?.document()?.set(contentDTO)
+//                    setResult(Activity.RESULT_OK)
+//
+//                    finish()
+//                }
+//            }
+        }
+
+    fun requestFirebaseStoreUserAlarmList(uId: String): Flowable<List<AlarmDTO>> {
+        return Flowable.create({ emitter ->
+            val reference: Query =
+                firebaseFireStore.collection("alarms").whereEqualTo("destinationUid", uId)
+            val registration = reference.addSnapshotListener { documentSnapshot, error ->
+                if (error != null) {
+                    emitter.onError(error)
+                    return@addSnapshotListener
+                }
+                if (documentSnapshot != null) {
+                    val itemList: ArrayList<AlarmDTO> = arrayListOf()
+                    for (snapshot in documentSnapshot) {
+                        val item = snapshot.toObject(AlarmDTO::class.java)
+                        itemList.add(item)
+                    }
+                    emitter.onNext(itemList)
+                }
+            }
+            emitter.setCancellable { registration.remove() }
+        }, BackpressureStrategy.BUFFER)
+    }
+
 }

@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.kslim.studyinstagram.data.repository.UserRepository
 import com.kslim.studyinstagram.ui.login.LoginViewModel
+import com.kslim.studyinstagram.ui.navigation.viewmodel.AlarmViewModel
 import com.kslim.studyinstagram.ui.navigation.viewmodel.DetailViewModel
 import com.kslim.studyinstagram.ui.navigation.viewmodel.GridViewModel
 import com.kslim.studyinstagram.ui.navigation.viewmodel.UserViewModel
+import com.kslim.studyinstagram.ui.photo.AddPhotoViewModel
 
 @Suppress("UNCHECKED_CAST")
 class ViewModelProviderFactory() : ViewModelProvider.NewInstanceFactory() {
@@ -30,6 +32,12 @@ class ViewModelProviderFactory() : ViewModelProvider.NewInstanceFactory() {
             }
             modelClass.isAssignableFrom(GridViewModel::class.java) -> {
                 GridViewModel(userRepository!!) as T
+            }
+            modelClass.isAssignableFrom(AddPhotoViewModel::class.java) -> {
+                AddPhotoViewModel(userRepository!!) as T
+            }
+            modelClass.isAssignableFrom(AlarmViewModel::class.java) -> {
+                AlarmViewModel(userRepository!!) as T
             }
             else -> {
                 throw IllegalArgumentException()

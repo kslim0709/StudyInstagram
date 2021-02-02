@@ -9,18 +9,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.ViewModelProviderFactory
 import com.kslim.studyinstagram.data.repository.UserRepository
 import com.kslim.studyinstagram.databinding.FragmentGridBinding
-import com.kslim.studyinstagram.databinding.FragmentUserBinding
 import com.kslim.studyinstagram.ui.navigation.adapter.GridAdapter
-import com.kslim.studyinstagram.ui.navigation.adapter.UserAdapter
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 import com.kslim.studyinstagram.ui.navigation.viewmodel.GridViewModel
-import com.kslim.studyinstagram.ui.navigation.viewmodel.UserViewModel
+import com.kslim.studyinstagram.utils.ImageOffsetDecoration
 
 class GridFragment : Fragment() {
 
@@ -33,7 +29,7 @@ class GridFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         gridDataBinding = DataBindingUtil.inflate(
             LayoutInflater.from(activity),
             R.layout.fragment_grid,
@@ -56,7 +52,8 @@ class GridFragment : Fragment() {
         gridRecyclerView = gridDataBinding.recyGridFragment
 
         gridRecyclerView.adapter = gridAdapter
-        gridRecyclerView.layoutManager = GridLayoutManager(activity, 3)
+        gridRecyclerView.layoutManager = GridLayoutManager(view.context, 3)
+        gridRecyclerView.addItemDecoration(ImageOffsetDecoration(6))
 
         val currentUserId = UserRepository.getInstance().currentUser()?.uid
         currentUserId?.let { gridViewModel.requestFirebaseStoreItemList(it) }
