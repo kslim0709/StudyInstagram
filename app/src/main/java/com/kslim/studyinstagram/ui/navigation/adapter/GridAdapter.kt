@@ -1,5 +1,6 @@
 package com.kslim.studyinstagram.ui.navigation.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
@@ -8,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.kslim.studyinstagram.R
 import com.kslim.studyinstagram.databinding.ItemGridBinding
+import com.kslim.studyinstagram.ui.navigation.PhotoPageActivity
 import com.kslim.studyinstagram.ui.navigation.model.ContentDTO
 
 class GridAdapter : RecyclerView.Adapter<GridAdapter.GridViewHolder>() {
@@ -43,6 +45,14 @@ class GridAdapter : RecyclerView.Adapter<GridAdapter.GridViewHolder>() {
 
             Glide.with(gridBinding.root).load(contentDTOs[position].imageUrl)
                 .apply(RequestOptions().centerCrop()).into(imageView)
+
+
+            holder.gridBinding.itemImage.setOnClickListener {
+                val intent = Intent(it.context, PhotoPageActivity::class.java)
+                intent.putExtra("photoInfoIndex", position)
+                intent.putExtra("photoInfoList", contentDTOs)
+                it.context.startActivity(intent)
+            }
         }
 
 

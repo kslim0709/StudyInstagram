@@ -9,9 +9,11 @@
         android:name=".StudyInstagramApp"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ui.navigation.PhotoPageActivity" />
         <activity android:name=".ui.navigation.CommentActivity" />
         <activity android:name=".ui.photo.AddPhotoActivity" />
         <activity android:name=".ui.login.LoginActivity">
@@ -45,28 +47,25 @@
         </activity>
 
         <service
-            android:name="com.kslim.studyinstagram.ui.FirebaseMessagingService"
+            android:name=".ui.FirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-        </service>
-
-
-        <!-- Set custom default icon. This is used when no icon is set for incoming notification messages. -->
+        </service> <!-- Set custom default icon. This is used when no icon is set for incoming notification messages. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/push_icon" />
-        <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
-             notification message. See README(https://goo.gl/6BKBk7) for more. -->
+        <!--
+ Set color used with incoming notification messages. This is used when no color is set for the incoming
+             notification message. See README(https://goo.gl/6BKBk7) for more.
+        -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
-
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />
-
     </application>
 
 </manifest>

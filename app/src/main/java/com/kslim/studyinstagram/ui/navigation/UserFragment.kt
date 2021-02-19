@@ -142,9 +142,11 @@ class UserFragment : Fragment() {
     }
 
     fun setUserProfile() {
-        val photoPickerIntent = Intent(Intent.ACTION_PICK)
-        photoPickerIntent.type = "image/*"
-        activity?.startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM)
+        if (uid == currentUserId) {
+            val photoPickerIntent = Intent(Intent.ACTION_PICK)
+            photoPickerIntent.type = "image/*"
+            activity?.startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM)
+        }
     }
 
     fun btnAccountFollowSignOut() {
